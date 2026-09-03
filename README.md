@@ -6,7 +6,7 @@
 
 ## License
 
-Copyright 2026 Zenhosta
+Copyright 2026 Chetan302003
 
 Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
 
@@ -38,15 +38,13 @@ Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for detai
 
 ## Preview
 
-Live preview: https://9drive.zenhosta.com
-
 ![9Drive dashboard preview](https://i.ibb.co.com/HLjG3JRf/image.png)
 
 ![9Drive shared file preview](https://i.ibb.co.com/QLpYGmx/image.png)
 
 ## Star History
 
-[![Star History Chart](https://star-history.dera.page/svg?repos=zenhosta/9drive&type=Date)](https://star-history.dera.page/#zenhosta/9drive&type=Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=Chetan302003/combine-drive&type=Date)](https://star-history.dera.page/#Chetan302003/combine-drive&type=Date)
 
 ## Project Structure
 
