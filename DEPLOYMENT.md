@@ -19,16 +19,25 @@ This guide will walk you through setting up 9Drive entirely on free hosting plat
 
 ## 2. Setup Render (Backend)
 1. Sign up on [Render](https://render.com/).
-2. Go to your Dashboard and click **New+** > **Blueprint**.
-3. Connect your GitHub repository.
-4. Render will automatically detect the `render.yaml` file we added to the root of the repository.
-5. In the final step before deploying, Render will prompt you for missing Environment Variables:
+2. Go to your Dashboard and click **New+** > **Web Service**. *(Do not use Blueprint, as it asks for a credit card)*
+3. Select **"Build and deploy from a Git repository"** and connect your GitHub repository.
+4. Fill in the following details for your web service:
+   - **Root Directory**: `backend`
+   - **Environment**: `Node`
+   - **Build Command**: `npm install && npx prisma generate && npm run build`
+   - **Start Command**: `npm run start`
+   - **Instance Type**: `Free`
+5. Click **Advanced** to open the Environment Variables section and add the following:
    - `DATABASE_URL`: Paste the MySQL Service URI from Aiven here.
+   - `APP_PORT`: `4000`
    - `FRONTEND_URL`: You can put a temporary value for now (e.g. `https://9drive.vercel.app`) or leave it blank until the Vercel step is complete, then update it later.
+   - `JWT_ACCESS_SECRET`: Generate any random string of characters (at least 32 chars).
+   - `TOKEN_ENCRYPTION_KEY`: Generate any random string (at least 32 chars).
+   - `MAX_UPLOAD_BYTES`: `5368709120`
    - `GOOGLE_CLIENT_ID`: Your Google OAuth Client ID (from Google Cloud Console).
    - `GOOGLE_CLIENT_SECRET`: Your Google OAuth Client Secret.
    - `GOOGLE_REDIRECT_URI`: Set this to `https://your-backend-url.onrender.com/connected-accounts/google/callback`.
-6. Click **Apply** to deploy the backend. Wait for it to build and start.
+6. Click **Create Web Service** to deploy the backend. Wait for it to build and start.
 7. Once successfully deployed, copy the **Render URL** for your backend service (e.g. `https://9drive-backend.onrender.com`).
 
 ---
