@@ -1,34 +1,40 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="icon" href="/favicon.png" type="image/png" />
-    <link rel="apple-touch-icon" href="/favicon.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#2563eb" />
-    <meta name="description" content="Combine Drive (combine-drive) is a unified cloud storage gateway that aggregates multiple Google Drive accounts, pools storage quotas, and manages files in virtual folders." />
-    <!-- Google Search Console Domain Verification (if using HTML tag method) -->
-    <!-- <meta name="google-site-verification" content="YOUR_GOOGLE_VERIFICATION_TOKEN" /> -->
-    <title>Combine Drive - Cloud Storage Gateway (combine-drive)</title>
-    <script>
-      (function() {
-        const saved = localStorage.getItem('9drive:theme');
-        const theme = saved === 'light' || saved === 'dark' ? saved : 'dark';
-        if (theme === 'dark') {
-          document.documentElement.classList.add('dark');
-          document.documentElement.classList.remove('light');
-        } else {
-          document.documentElement.classList.add('light');
-          document.documentElement.classList.remove('dark');
-        }
-      })();
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link rel="icon" href="/favicon.png" type="image/png" />
+  <link rel="apple-touch-icon" href="/favicon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2563eb" />
+  <meta name="description"
+    content="Combine Drive (combine-drive) is a unified cloud storage gateway that aggregates multiple Google Drive accounts, pools storage quotas, and manages files in virtual folders." />
+  <!-- Google Search Console Domain Verification (if using HTML tag method) -->
+  <meta name="google-site-verification"
+    content="google-site-verification=swaK2LPRJUfdPq5vjSQUUuZjScs5Ac5f_RuEiCRe2JU" />
+  <title>Combine Drive - Cloud Storage Gateway (combine-drive)</title>
+  <script>
+    (function () {
+      const saved = localStorage.getItem('9drive:theme');
+      const theme = saved === 'light' || saved === 'dark' ? saved : 'dark';
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      } else {
+        document.documentElement.classList.add('light');
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>
