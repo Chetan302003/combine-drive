@@ -52,7 +52,7 @@ export function LoginPage() {
       <Card className="w-full max-w-md p-6">
         <div className="flex items-center gap-3">
           <BrandLogo className="h-11 w-11" />
-          <div><h1 className="text-2xl font-extrabold">Login</h1><p className="text-sm text-slate-500">Access your Combined gateway.</p></div>
+          <div><h1 className="text-2xl font-extrabold">Sign In</h1><p className="text-sm text-slate-500">Access your Combine Drive workspace.</p></div>
         </div>
         <form onSubmit={submit} className="mt-6 grid gap-4">
           <label className="grid gap-2 text-sm font-semibold">Email<Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>

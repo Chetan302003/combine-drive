@@ -11,7 +11,7 @@ export function PrivacyPolicyPage() {
           <Link to="/" className="flex items-center gap-2.5 transition hover:opacity-90">
             <BrandLogo className="h-8 w-8" />
             <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Combined
+              Combine Drive
             </span>
           </Link>
 

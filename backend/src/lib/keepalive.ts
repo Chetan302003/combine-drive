@@ -1,6 +1,6 @@
 import { prisma } from '../config/prisma.js'
 
-const INTERVAL_MS = 14 * 60 * 1000 // 14 minutes – just under Render's 15-min idle cutoff
+const INTERVAL_MS = 10 * 60 * 1000 // 10 minutes – just under Render's 15-min idle cutoff
 
 export interface KeepaliveState {
   isRunning: boolean
@@ -48,7 +48,7 @@ export async function performKeepalivePing(): Promise<{
   dbError?: string
   timestamp: string
 }> {
-  const targetUrl = state.healthUrl || 'http://localhost:4000/health'
+  const targetUrl = state.healthUrl || 'https://combine-drive-backend.onrender.com/health'
   let pingStatus: number | null = null
   let pingLatencyMs: number | null = null
   let pingError: string | undefined = undefined

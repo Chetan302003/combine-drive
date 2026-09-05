@@ -3,6 +3,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { DriveLayout } from '@/layouts/DriveLayout'
 import { AllFilesPage } from '@/pages/AllFilesPage'
 import { ArchivedPage } from '@/pages/ArchivedPage'
+import { LandingPage } from '@/pages/LandingPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { GoogleAuthPage } from '@/pages/GoogleAuthPage'
 import { GoogleConnectedPage } from '@/pages/GoogleConnectedPage'
@@ -25,6 +26,8 @@ function App() {
   return (
     <UploadProvider>
       <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="home" element={<LandingPage />} />
       <Route path="login" element={<LoginPage />} />
       <Route path="register" element={<RegisterPage />} />
       <Route path="privacy" element={<PrivacyPolicyPage />} />
