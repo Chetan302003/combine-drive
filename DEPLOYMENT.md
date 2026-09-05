@@ -40,6 +40,7 @@ This guide will walk you through setting up 9Drive entirely on free hosting plat
    - `SELF_URL`: Set this to your Render backend URL (e.g. `https://9drive-backend.onrender.com`). This enables the built-in keepalive — the backend will self-ping its own `/health` endpoint and run a lightweight DB query every 14 minutes to prevent Render from spinning down and Aiven MySQL from going idle.
 6. Click **Create Web Service** to deploy the backend. Wait for it to build and start.
 7. Once successfully deployed, copy the **Render URL** for your backend service (e.g. `https://9drive-backend.onrender.com`).
+8. In your **Render Web Service Settings** > scroll to **Health Check Path** and set it to `/health`. Render will use this to verify service health during deployments.
 
 ---
 

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, type FormEvent } from 'react'
-import { Activity, Bell, Cloud, Database, Globe, HardDrive, Link2, RefreshCw, Trash2 } from 'lucide-react'
+import { Activity, Bell, Bot, Check, Cloud, Copy, Database, ExternalLink, Globe, HardDrive, Link2, Radio, RefreshCw, ShieldCheck, Trash2, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { DummyModal } from '@/components/drive/DummyModal'
@@ -60,12 +60,35 @@ export function SettingsPage() {
   const [reconnectCount, setReconnectCount] = useState(0)
   const logContainerRef = useRef<HTMLDivElement>(null)
 
-  // Service health states
+  // Service health & Uptime bot states
   const [healthStatus, setHealthStatus] = useState<'checking' | 'ok' | 'error'>('checking')
   const [dbStatus, setDbStatus] = useState<'checking' | 'ok' | 'error'>('checking')
   const [healthUptime, setHealthUptime] = useState<number | null>(null)
   const [healthCheckedAt, setHealthCheckedAt] = useState<Date | null>(null)
   const [checkingHealth, setCheckingHealth] = useState(false)
+
+  type UptimeBotData = {
+    botActive: boolean
+    selfUrl: string
+    healthUrl: string
+    intervalMinutes: number
+    totalPings: number
+    lastPingAt: string | null
+    lastPingStatus: 'ok' | 'error' | null
+    lastPingLatencyMs: number | null
+    lastPingError: string | null
+    lastDbStatus: 'ok' | 'error' | null
+    lastDbLatencyMs: number | null
+    lastDbError: string | null
+    serverUptime: number
+    recommendedHealthUrl: string
+  }
+
+  const [uptimeBotData, setUptimeBotData] = useState<UptimeBotData | null>(null)
+  const [triggeringBot, setTriggeringBot] = useState(false)
+  const [botMessage, setBotMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [copiedHealthUrl, setCopiedHealthUrl] = useState(false)
+  const [showBotGuide, setShowBotGuide] = useState(false)
 
   // Backup & Restore states
   const [downloadingBackup, setDownloadingBackup] = useState(false)
@@ -92,6 +115,60 @@ export function SettingsPage() {
       setHealthCheckedAt(new Date())
       setCheckingHealth(false)
     }
+  }
+
+  async function fetchUptimeBot() {
+    try {
+      const data = await apiFetch<UptimeBotData>('/system/uptime-bot')
+      setUptimeBotData(data)
+      if (data.lastPingStatus) {
+        setHealthStatus(data.lastPingStatus)
+      }
+      if (data.lastDbStatus) {
+        setDbStatus(data.lastDbStatus)
+      }
+      if (data.serverUptime) {
+        setHealthUptime(data.serverUptime)
+      }
+    } catch {
+      // ignore if unauthenticated or offline
+    }
+  }
+
+  async function triggerBotPing() {
+    setTriggeringBot(true)
+    setBotMessage(null)
+    try {
+      const res = await apiFetch<{
+        status: string
+        message: string
+        pingLatencyMs: number | null
+        dbLatencyMs: number | null
+        pingStatus: number | null
+        dbStatus: string
+      }>('/system/uptime-bot/trigger', { method: 'POST' })
+      setBotMessage({
+        type: 'success',
+        text: `Health check ping succeeded! Render: ${res.pingStatus ?? 200} (${res.pingLatencyMs ?? 0}ms), Aiven DB: ${res.dbStatus} (${res.dbLatencyMs ?? 0}ms)`
+      })
+      await fetchUptimeBot()
+      await checkHealth()
+    } catch (err: any) {
+      setBotMessage({
+        type: 'error',
+        text: err.message || 'Health check ping failed'
+      })
+    } finally {
+      setTriggeringBot(false)
+    }
+  }
+
+  function copyHealthUrl() {
+    const url = uptimeBotData?.recommendedHealthUrl || uptimeBotData?.healthUrl || `${API_URL}/health`
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedHealthUrl(true)
+      setTimeout(() => setCopiedHealthUrl(false), 2000)
+    })
   }
 
   async function downloadBackup() {
@@ -284,6 +361,15 @@ export function SettingsPage() {
   useEffect(() => {
     load().catch((error) => setMessage(error instanceof Error ? error.message : 'Failed to load settings'))
     checkHealth()
+    fetchUptimeBot()
+
+    // Background browser pinger (keeps Render awake while tab is open)
+    const pingerInterval = setInterval(() => {
+      checkHealth().catch(() => {})
+      fetchUptimeBot().catch(() => {})
+    }, 5 * 60 * 1000)
+
+    return () => clearInterval(pingerInterval)
   }, [])
 
   useEffect(() => {
@@ -441,6 +527,178 @@ export function SettingsPage() {
                 </div> : null}
               </>}
             </div>
+          </Card>
+
+          {/* 24/7 Uptime & Keepalive Bot Card */}
+          <Card className="overflow-hidden p-4 border border-blue-500/20 bg-gradient-to-br from-white to-blue-50/20 dark:from-slate-900 dark:to-slate-950 shadow-sm">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400">
+                  <Bot className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-[16px] font-bold text-slate-900 dark:text-slate-100">
+                      24/7 Uptime & Keepalive Bot
+                    </h2>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      {uptimeBotData?.botActive ? `Bot Active (${uptimeBotData.intervalMinutes}m cycle)` : 'Active & Ready'}
+                    </span>
+                  </div>
+                  <p className="text-[12px] text-slate-500 mt-0.5">
+                    Prevents Render Web Service and Aiven MySQL from turning off or sleeping due to inactivity.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowBotGuide(!showBotGuide)}
+                  className="h-8 text-xs font-semibold"
+                >
+                  {showBotGuide ? 'Hide Guide' : 'Setup Guide'}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={triggerBotPing}
+                  disabled={triggeringBot}
+                  className="h-8 text-xs font-semibold gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
+                >
+                  <Zap className={triggeringBot ? 'h-3.5 w-3.5 animate-spin' : 'h-3.5 w-3.5'} />
+                  {triggeringBot ? 'Pinging...' : 'Trigger Bot Ping'}
+                </Button>
+              </div>
+            </div>
+
+            {/* Live Metrics Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-3.5">
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-900/60 p-3 border border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between text-slate-500 text-[11px] font-medium">
+                  <span>Render Service</span>
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                </div>
+                <p className="mt-1 font-extrabold text-[15px] text-slate-900 dark:text-slate-100">
+                  {healthStatus === 'ok' ? 'Online' : healthStatus === 'error' ? 'Offline' : 'Checking…'}
+                </p>
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  {uptimeBotData?.lastPingLatencyMs !== null && uptimeBotData?.lastPingLatencyMs !== undefined
+                    ? `${uptimeBotData.lastPingLatencyMs}ms ping`
+                    : '15m idle prevention'}
+                </p>
+              </div>
+
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-900/60 p-3 border border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between text-slate-500 text-[11px] font-medium">
+                  <span>Aiven MySQL</span>
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                </div>
+                <p className="mt-1 font-extrabold text-[15px] text-slate-900 dark:text-slate-100">
+                  {dbStatus === 'ok' ? 'Connected' : dbStatus === 'error' ? 'Disconnected' : 'Checking…'}
+                </p>
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  {uptimeBotData?.lastDbLatencyMs !== null && uptimeBotData?.lastDbLatencyMs !== undefined
+                    ? `${uptimeBotData.lastDbLatencyMs}ms query`
+                    : 'SELECT 1 alive test'}
+                </p>
+              </div>
+
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-900/60 p-3 border border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between text-slate-500 text-[11px] font-medium">
+                  <span>Bot Schedule</span>
+                  <Radio className="h-3 w-3 text-blue-500 animate-pulse" />
+                </div>
+                <p className="mt-1 font-extrabold text-[15px] text-slate-900 dark:text-slate-100">
+                  Every 14m
+                </p>
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  {uptimeBotData?.totalPings ?? 0} pings performed
+                </p>
+              </div>
+
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-900/60 p-3 border border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between text-slate-500 text-[11px] font-medium">
+                  <span>Server Uptime</span>
+                  <Activity className="h-3 w-3 text-emerald-500" />
+                </div>
+                <p className="mt-1 font-extrabold text-[15px] text-slate-900 dark:text-slate-100">
+                  {healthUptime !== null
+                    ? `${Math.floor(healthUptime / 3600)}h ${Math.floor((healthUptime % 3600) / 60)}m`
+                    : 'Active'}
+                </p>
+                <p className="text-[10px] text-slate-400 mt-0.5 truncate">
+                  {uptimeBotData?.lastPingAt
+                    ? `Last: ${new Date(uptimeBotData.lastPingAt).toLocaleTimeString()}`
+                    : 'Running continuously'}
+                </p>
+              </div>
+            </div>
+
+            {/* URL bar & Quick Copy */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 rounded-xl bg-slate-50 dark:bg-slate-900/80 p-2.5 border border-slate-200/60 dark:border-slate-800 text-xs">
+              <span className="font-semibold text-slate-600 dark:text-slate-400 shrink-0 flex items-center gap-1.5">
+                <ShieldCheck className="h-4 w-4 text-emerald-600" />
+                Health Check URL:
+              </span>
+              <code className="flex-1 font-mono text-[11px] bg-white dark:bg-slate-950 p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 select-all overflow-x-auto text-blue-600 dark:text-blue-400">
+                {uptimeBotData?.recommendedHealthUrl || uptimeBotData?.healthUrl || `${API_URL}/health`}
+              </code>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={copyHealthUrl}
+                className="h-8 text-xs font-semibold gap-1 shrink-0"
+              >
+                {copiedHealthUrl ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                {copiedHealthUrl ? 'Copied!' : 'Copy URL'}
+              </Button>
+            </div>
+
+            {/* Notification message */}
+            {botMessage && (
+              <p className={botMessage.type === 'success' ? "rounded-xl bg-emerald-50 dark:bg-emerald-950/40 p-3 text-xs font-semibold mt-3 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/50" : "rounded-xl bg-red-50 dark:bg-red-950/40 p-3 text-xs font-semibold mt-3 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800/50"}>
+                {botMessage.text}
+              </p>
+            )}
+
+            {/* Collapsible Guide */}
+            {showBotGuide && (
+              <div className="mt-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 p-4 text-[13px] leading-relaxed text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-800 space-y-3">
+                <p className="font-bold text-slate-800 dark:text-slate-200">
+                  How 9Drive guarantees 24/7 uptime on free hosting:
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2.5">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700 text-[11px] font-bold">1</span>
+                    <div>
+                      <strong className="text-slate-800 dark:text-slate-200">Render Health Check Path:</strong>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        In your <a href="https://dashboard.render.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Render Dashboard</a> &gt; Web Service &gt; <strong>Settings</strong> &gt; scroll to <strong>Health Check Path</strong> and enter <code className="bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded text-[11px]">/health</code>.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700 text-[11px] font-bold">2</span>
+                    <div>
+                      <strong className="text-slate-800 dark:text-slate-200">Backend Built-in Uptime Bot:</strong>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        The backend self-pings its own <code className="bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded text-[11px]">/health</code> endpoint and executes a MySQL <code className="bg-slate-200 dark:bg-slate-800 px-1 py-0.5 rounded text-[11px]">SELECT 1</code> every 14 minutes, keeping both Render and Aiven active.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-700 text-[11px] font-bold">3</span>
+                    <div>
+                      <strong className="text-slate-800 dark:text-slate-200">Free External Uptime Bot (Guarantees wake-up even after deep sleep):</strong>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Sign up for free at <a href="https://uptimerobot.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center gap-0.5">UptimeRobot <ExternalLink className="h-3 w-3" /></a> and create a HTTP(s) monitor pointing to your copied Health Check URL with a 5-minute interval. It is 100% free and ensures Render will never stay asleep.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </Card>
 
           <Card className="p-4">

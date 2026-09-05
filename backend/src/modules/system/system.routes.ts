@@ -6,6 +6,7 @@ import { requireAuth } from '../../middleware/auth.middleware.js'
 import { prisma } from '../../config/prisma.js'
 import { decryptText, encryptText } from '../../utils/crypto.js'
 import Busboy from 'busboy'
+import { getKeepaliveState, performKeepalivePing } from '../../lib/keepalive.js'
 
 export const systemRouter = Router()
 
@@ -294,6 +295,33 @@ systemRouter.post('/restore', requireAuth, (req, res, next) => {
     req.pipe(busboy)
   } catch (error) {
     return next(error)
+  }
+})
+
+systemRouter.get('/uptime-bot', requireAuth, (req, res) => {
+  const botState = getKeepaliveState()
+  const defaultHealth = `${req.protocol}://${req.get('host')}/health`
+  res.json({
+    ...botState,
+    healthUrl: botState.healthUrl || defaultHealth,
+    serverUptime: Math.floor(process.uptime()),
+    recommendedHealthUrl: botState.selfUrl ? `${botState.selfUrl}/health` : defaultHealth
+  })
+})
+
+systemRouter.post('/uptime-bot/trigger', requireAuth, async (req, res) => {
+  try {
+    const result = await performKeepalivePing()
+    res.json({
+      status: 'success',
+      message: result.success ? 'Keepalive ping and database check succeeded!' : 'Keepalive ping completed with warnings',
+      ...result
+    })
+  } catch (error: any) {
+    res.status(500).json({
+      code: 'PING_FAILED',
+      message: error.message || 'Failed to trigger keepalive ping'
+    })
   }
 })
 
