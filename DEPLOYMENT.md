@@ -37,6 +37,7 @@ This guide will walk you through setting up 9Drive entirely on free hosting plat
    - `GOOGLE_CLIENT_ID`: Your Google OAuth Client ID (from Google Cloud Console).
    - `GOOGLE_CLIENT_SECRET`: Your Google OAuth Client Secret.
    - `GOOGLE_REDIRECT_URI`: Set this to `https://your-backend-url.onrender.com/connected-accounts/google/callback`.
+   - `SELF_URL`: Set this to your Render backend URL (e.g. `https://9drive-backend.onrender.com`). This enables the built-in keepalive — the backend will self-ping its own `/health` endpoint and run a lightweight DB query every 14 minutes to prevent Render from spinning down and Aiven MySQL from going idle.
 6. Click **Create Web Service** to deploy the backend. Wait for it to build and start.
 7. Once successfully deployed, copy the **Render URL** for your backend service (e.g. `https://9drive-backend.onrender.com`).
 
