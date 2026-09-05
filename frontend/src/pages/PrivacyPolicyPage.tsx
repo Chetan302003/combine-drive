@@ -11,7 +11,7 @@ export function PrivacyPolicyPage() {
           <Link to="/" className="flex items-center gap-2.5 transition hover:opacity-90">
             <BrandLogo className="h-8 w-8" />
             <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              9Drive
+              Combined
             </span>
           </Link>
 
@@ -44,7 +44,7 @@ export function PrivacyPolicyPage() {
             Privacy Policy
           </h1>
           <p className="mt-3 text-base text-slate-600 max-w-2xl mx-auto">
-            How 9Drive collects, uses, encrypts, and protects your information, including connected Google Drive storage accounts.
+            How Combined collects, uses, encrypts, and protects your information, including connected Google Drive storage accounts.
           </p>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-slate-500">
             <span>Effective Date: September 2026</span>
@@ -57,7 +57,7 @@ export function PrivacyPolicyPage() {
       {/* Content */}
       <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="space-y-10 text-slate-700 leading-relaxed text-sm sm:text-base">
-          
+
           {/* Quick Summary Card */}
           <div className="rounded-2xl border border-blue-100 bg-blue-50/50 p-6 sm:p-7">
             <h2 className="text-base font-bold text-blue-950 flex items-center gap-2">
@@ -67,7 +67,7 @@ export function PrivacyPolicyPage() {
             <ul className="mt-3 grid gap-2.5 text-sm text-blue-900">
               <li className="flex items-start gap-2">
                 <span className="font-bold text-blue-600 mt-0.5">•</span>
-                <span><strong>No File Harvesting:</strong> 9Drive acts as a storage gateway. Files you upload stream directly to your connected Google Drive storage under the dedicated <code>9drive</code> folder and are not permanently retained on 9Drive application disks.</span>
+                <span><strong>No File Harvesting:</strong> Combined acts as a storage gateway. Files you upload stream directly to your connected Google Drive storage under the dedicated <code>9drive</code> folder and are not permanently retained on Combined application disks.</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="font-bold text-blue-600 mt-0.5">•</span>
@@ -84,7 +84,7 @@ export function PrivacyPolicyPage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-slate-900">1. Information We Collect</h2>
             <p>
-              When you interact with 9Drive, we collect only the information required to provide multi-account storage gateway services:
+              When you interact with Combined, we collect only the information required to provide multi-account storage gateway services:
             </p>
             <div className="grid gap-3 sm:grid-cols-2 mt-2">
               <div className="rounded-xl border border-slate-200 bg-white p-4">
@@ -137,7 +137,7 @@ export function PrivacyPolicyPage() {
               3. Google API Services User Data Policy (Limited Use)
             </h2>
             <p>
-              9Drive's use and transfer to any other app of information received from Google APIs adheres to the{' '}
+              Combined&apos;s use and transfer to any other app of information received from Google APIs adheres to the{' '}
               <a
                 href="https://developers.google.com/terms/api-services-user-data-policy"
                 target="_blank"
@@ -151,7 +151,7 @@ export function PrivacyPolicyPage() {
             <div className="space-y-2 text-sm text-slate-600 pt-1">
               <p>Specifically:</p>
               <ul className="list-disc pl-5 space-y-1">
-                <li>We only request access to Google Drive scopes necessary to manage files in the app's dedicated storage folder and calculate storage quota.</li>
+                <li>We only request access to Google Drive scopes necessary to manage files in the app&apos;s dedicated storage folder and calculate storage quota.</li>
                 <li>We do not transfer or disclose Google user data to third parties, unless necessary to provide or improve the core features, comply with applicable law, or as part of a merger or acquisition.</li>
                 <li>We do not use or transfer Google user data for serving advertisements, including retargeting, personalized, or interest-based advertising.</li>
                 <li>Human personnel are not allowed to view your file content unless you have given explicit consent for troubleshooting, it is necessary for security purposes (such as investigating a bug or abuse), or to comply with applicable laws.</li>
@@ -163,12 +163,12 @@ export function PrivacyPolicyPage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-slate-900">4. File Storage & Streaming Architecture</h2>
             <p>
-              9Drive is architected as an intermediary gateway:
+              Combined is architected as an intermediary gateway:
             </p>
             <div className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-4">
               <Server className="h-5 w-5 text-indigo-600 shrink-0 mt-1" />
               <div className="text-sm text-slate-600">
-                <strong className="text-slate-900">Zero Persistent File Caching:</strong> When you upload a file, the backend streams the data directly through memory to Google's Drive API endpoints without saving the file payload to disk. When you preview or download a file, the data streams through temporary authenticated buffers directly to your browser.
+                <strong className="text-slate-900">Zero Persistent File Caching:</strong> When you upload a file, the backend streams the data directly through memory to Google&apos;s Drive API endpoints without saving the file payload to disk. When you preview or download a file, the data streams through temporary authenticated buffers directly to your browser.
               </div>
             </div>
           </section>
@@ -184,7 +184,7 @@ export function PrivacyPolicyPage() {
                 <strong>Disconnecting Accounts:</strong> You can disconnect any linked Google Drive account at any time via the <em>Settings &gt; Connected Accounts</em> panel. When disconnected, the corresponding encrypted refresh tokens are permanently deleted from our database.
               </li>
               <li>
-                <strong>Google Account Permissions:</strong> You may also revoke 9Drive's access at any time through your{' '}
+                <strong>Google Account Permissions:</strong> You may also revoke Combined&apos;s access at any time through your{' '}
                 <a
                   href="https://myaccount.google.com/permissions"
                   target="_blank"
@@ -195,7 +195,7 @@ export function PrivacyPolicyPage() {
                 </a>.
               </li>
               <li>
-                <strong>Account Deletion:</strong> You may request complete deletion of your 9Drive account and all associated metadata by contacting us.
+                <strong>Account Deletion:</strong> You may request complete deletion of your Combined account and all associated metadata by contacting us.
               </li>
             </ul>
           </section>
@@ -218,7 +218,7 @@ export function PrivacyPolicyPage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-slate-900">7. Changes to This Policy</h2>
             <p>
-              We may update this Privacy Policy from time to time to reflect changes in our technology or legal requirements. When updates occur, the "Last Updated" date at the top of this page will be revised. Material changes will be accompanied by a notification in the application dashboard.
+              We may update this Privacy Policy from time to time to reflect changes in our technology or legal requirements. When updates occur, the &quot;Last Updated&quot; date at the top of this page will be revised. Material changes will be accompanied by a notification in the application dashboard.
             </p>
           </section>
 
@@ -240,7 +240,7 @@ export function PrivacyPolicyPage() {
       {/* Footer */}
       <footer className="border-t border-slate-200/80 bg-white py-8 text-center text-xs text-slate-500">
         <div className="mx-auto max-w-5xl px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© {new Date().getFullYear()} 9Drive. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Combined. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <Link to="/terms" className="hover:text-slate-800 transition">Terms of Service</Link>
             <span>•</span>

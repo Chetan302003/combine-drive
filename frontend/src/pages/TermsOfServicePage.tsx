@@ -11,7 +11,7 @@ export function TermsOfServicePage() {
           <Link to="/" className="flex items-center gap-2.5 transition hover:opacity-90">
             <BrandLogo className="h-8 w-8" />
             <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              9Drive
+              Combined
             </span>
           </Link>
 
@@ -44,7 +44,7 @@ export function TermsOfServicePage() {
             Terms of Service
           </h1>
           <p className="mt-3 text-base text-slate-600 max-w-2xl mx-auto">
-            Please read these Terms of Service carefully before accessing or using the 9Drive storage gateway application.
+            Please read these Terms of Service carefully before accessing or using the Combined storage gateway application.
           </p>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-slate-500">
             <span>Effective Date: September 2026</span>
@@ -65,7 +65,7 @@ export function TermsOfServicePage() {
               Agreement Overview
             </h2>
             <p className="mt-2 text-sm text-slate-600">
-              By accessing or using 9Drive (the &quot;Service&quot;), you acknowledge that you have read, understood, and agree to be bound by these Terms of Service. If you do not agree to these terms, do not access or use the Service.
+              By accessing or using Combined (the &quot;Service&quot;), you acknowledge that you have read, understood, and agree to be bound by these Terms of Service. If you do not agree to these terms, do not access or use the Service.
             </p>
           </div>
 
@@ -73,7 +73,7 @@ export function TermsOfServicePage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-slate-900">1. Description of Service</h2>
             <p>
-              9Drive is an advanced cloud storage gateway platform designed to streamline and unify storage management across multiple Google Drive accounts. The Service allows users to:
+              Combined is an advanced cloud storage gateway platform designed to streamline and unify storage management across multiple Google Drive accounts. The Service allows users to:
             </p>
             <ul className="list-disc pl-5 space-y-1 text-slate-700">
               <li>Connect one or more authorized Google Drive accounts via OAuth 2.0.</li>
@@ -82,7 +82,7 @@ export function TermsOfServicePage() {
               <li>Manage virtual directories, search file metadata, and generate public or password-protected access tokens.</li>
             </ul>
             <p className="text-sm text-slate-500 italic">
-              Note: 9Drive does not host persistent user file contents on its own hardware infrastructure; files are hosted within your connected third-party storage providers.
+              Note: Combined does not host persistent user file contents on its own hardware infrastructure; files are hosted within your connected third-party storage providers.
             </p>
           </section>
 
@@ -90,7 +90,7 @@ export function TermsOfServicePage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-slate-900">2. User Accounts & Registration</h2>
             <p>
-              To use 9Drive, you must create an account. You agree to:
+              To use Combined, you must create an account. You agree to:
             </p>
             <ul className="list-disc pl-5 space-y-1 text-slate-700">
               <li>Provide accurate, current, and complete information during registration.</li>
@@ -104,11 +104,11 @@ export function TermsOfServicePage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-slate-900">3. Third-Party Services & Google Drive</h2>
             <p>
-              By linking your Google account(s) to 9Drive, you authorize the Service to access your Google Drive storage within the scopes granted during the OAuth consent flow.
+              By linking your Google account(s) to Combined, you authorize the Service to access your Google Drive storage within the scopes granted during the OAuth consent flow.
             </p>
             <div className="rounded-xl border border-slate-200 bg-white p-4">
               <p className="text-sm text-slate-600">
-                You acknowledge and agree that your use of Google Drive is also governed by Google&apos;s respective Terms of Service and Privacy Policies. 9Drive is not responsible for outages, rate limits, data policies, or service terminations imposed by Google.
+                You acknowledge and agree that your use of Google Drive is also governed by Google&apos;s respective Terms of Service and Privacy Policies. Combined is not responsible for outages, rate limits, data policies, or service terminations imposed by Google.
               </p>
             </div>
           </section>
@@ -117,12 +117,12 @@ export function TermsOfServicePage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-slate-900">4. User Content & Intellectual Property</h2>
             <p>
-              <strong>You retain 100% ownership</strong> of all files, documents, media, and data that you upload, transmit, or organize through 9Drive.
+              <strong>You retain 100% ownership</strong> of all files, documents, media, and data that you upload, transmit, or organize through Combined.
             </p>
             <ul className="list-disc pl-5 space-y-1 text-slate-700">
-              <li>9Drive does not claim any copyright or proprietary interest in your files.</li>
-              <li>You grant 9Drive only the limited technical rights necessary to stream, process, and display your files solely to fulfill the functionality of the Service.</li>
-              <li>All intellectual property rights in the 9Drive application, brand, logo, and user interface belong exclusively to 9Drive.</li>
+              <li>Combined does not claim any copyright or proprietary interest in your files.</li>
+              <li>You grant Combined only the limited technical rights necessary to stream, process, and display your files solely to fulfill the functionality of the Service.</li>
+              <li>All intellectual property rights in the Combined application, brand, logo, and user interface belong exclusively to Combined.</li>
             </ul>
           </section>
 
@@ -133,7 +133,7 @@ export function TermsOfServicePage() {
             <ul className="list-disc pl-5 space-y-1.5 text-slate-700">
               <li>Upload, store, or transmit any material that is unlawful, defamatory, harassing, or infringes intellectual property rights.</li>
               <li>Distribute malware, ransomware, viruses, or any software designed to disrupt or compromise computer systems.</li>
-              <li>Attempt to reverse-engineer, decompile, or compromise the security of the 9Drive platform.</li>
+              <li>Attempt to reverse-engineer, decompile, or compromise the security of the Combined platform.</li>
               <li>Circumvent storage limits, abuse API endpoints, or conduct automated denial-of-service attacks.</li>
               <li>Use the Service for any unauthorized commercial reselling or automated bulk exploitation.</li>
             </ul>
@@ -143,7 +143,7 @@ export function TermsOfServicePage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-slate-900">6. Termination & Suspension</h2>
             <p>
-              You may terminate your account at any time by disconnecting your cloud drives and ceasing use of the Service. We reserve the right to suspend or terminate access to 9Drive if you violate these Terms or if required to do so by applicable laws or provider restrictions.
+              You may terminate your account at any time by disconnecting your cloud drives and ceasing use of the Service. We reserve the right to suspend or terminate access to Combined if you violate these Terms or if required to do so by applicable laws or provider restrictions.
             </p>
           </section>
 
@@ -162,7 +162,7 @@ export function TermsOfServicePage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-slate-900">8. Limitation of Liability</h2>
             <p className="text-xs sm:text-sm text-slate-600">
-              TO THE MAXIMUM EXTENT PERMITTED BY LAW, 9DRIVE AND ITS OPERATORS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOSS OF PROFITS, DATA, USE, OR GOODWILL, ARISING OUT OF OR IN CONNECTION WITH YOUR ACCESS TO OR USE OF THE SERVICE.
+              TO THE MAXIMUM EXTENT PERMITTED BY LAW, COMBINED AND ITS OPERATORS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOSS OF PROFITS, DATA, USE, OR GOODWILL, ARISING OUT OF OR IN CONNECTION WITH YOUR ACCESS TO OR USE OF THE SERVICE.
             </p>
           </section>
 
@@ -170,7 +170,7 @@ export function TermsOfServicePage() {
           <section className="space-y-3">
             <h2 className="text-xl font-bold text-slate-900">9. Modifications to Terms</h2>
             <p>
-              We reserve the right to modify these Terms at any time. Continued use of 9Drive after any modifications constitutes acceptance of the new Terms of Service.
+              We reserve the right to modify these Terms at any time. Continued use of Combined after any modifications constitutes acceptance of the new Terms of Service.
             </p>
           </section>
 
@@ -192,7 +192,7 @@ export function TermsOfServicePage() {
       {/* Footer */}
       <footer className="border-t border-slate-200/80 bg-white py-8 text-center text-xs text-slate-500">
         <div className="mx-auto max-w-5xl px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© {new Date().getFullYear()} 9Drive. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Combined. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <Link to="/terms" className="hover:text-slate-800 transition">Terms of Service</Link>
             <span>•</span>

@@ -206,7 +206,7 @@ systemRouter.get('/backup', requireAuth, (req, res, next) => {
     if (!fs.existsSync(dbPath)) {
       return res.status(404).json({ code: 'NOT_FOUND', message: 'Database file not found.' })
     }
-    res.setHeader('Content-Disposition', 'attachment; filename=9drive-backup.db')
+    res.setHeader('Content-Disposition', 'attachment; filename=combined-backup.db')
     res.setHeader('Content-Type', 'application/octet-stream')
     const fileStream = fs.createReadStream(dbPath)
     fileStream.pipe(res)
