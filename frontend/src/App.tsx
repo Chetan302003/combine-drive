@@ -5,6 +5,8 @@ import { AllFilesPage } from '@/pages/AllFilesPage'
 import { ArchivedPage } from '@/pages/ArchivedPage'
 import { LandingPage } from '@/pages/LandingPage'
 import { LoginPage } from '@/pages/LoginPage'
+import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage'
+import { ResetPasswordPage } from '@/pages/ResetPasswordPage'
 import { GoogleAuthPage } from '@/pages/GoogleAuthPage'
 import { GoogleConnectedPage } from '@/pages/GoogleConnectedPage'
 import { QuotaTrackerPage } from '@/pages/QuotaTrackerPage'
@@ -30,6 +32,8 @@ function App() {
       <Route path="home" element={<LandingPage />} />
       <Route path="login" element={<LoginPage />} />
       <Route path="register" element={<RegisterPage />} />
+      <Route path="forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="reset-password" element={<ResetPasswordPage />} />
       <Route path="privacy" element={<PrivacyPolicyPage />} />
       <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
       <Route path="terms" element={<TermsOfServicePage />} />

@@ -197,3 +197,144 @@ export async function sendInviteEmail(params: {
     text: `${senderLabel} invited you to access "${targetName}" (${targetType}) with ${role} permissions. Open: ${accessUrl}`,
   })
 }
+
+/**
+ * Sends a password reset email containing a secure one-time link.
+ */
+export async function sendPasswordResetEmail(params: {
+  to: string
+  name: string
+  resetUrl: string
+  expiresInMinutes?: number
+}): Promise<boolean> {
+  const appUrl = env.FRONTEND_URL || 'https://www.combined.top'
+  const { to, name, resetUrl, expiresInMinutes = 15 } = params
+  const displayName = name?.trim() || 'there'
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 20px; }
+    .container { max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; }
+    .header { background: linear-gradient(135deg, #2563eb, #4f46e5); padding: 28px 24px; text-align: center; color: #ffffff; }
+    .header h1 { margin: 0; font-size: 22px; font-weight: 800; }
+    .content { padding: 32px 24px; line-height: 1.6; font-size: 15px; }
+    .btn { display: inline-block; background: #2563eb; color: #ffffff !important; text-decoration: none; padding: 13px 30px; border-radius: 10px; font-weight: 700; margin: 20px 0; }
+    .warning { background: #fffbeb; border: 1px solid #fef3c7; border-radius: 10px; padding: 14px 18px; margin: 18px 0; font-size: 13px; color: #92400e; }
+    .footer { padding: 20px 24px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Reset Your Password</h1>
+    </div>
+    <div class="content">
+      <p>Hi <strong>${displayName}</strong>,</p>
+      <p>We received a request to reset the password for your Combine Drive account associated with <strong>${to}</strong>.</p>
+      
+      <div style="text-align: center;">
+        <a href="${resetUrl}" class="btn">Reset Password</a>
+      </div>
+
+      <div class="warning">
+        <strong>Security Notice:</strong> This link will expire in <strong>${expiresInMinutes} minutes</strong>. If you did not request a password reset, you can safely ignore this email — your account remains secure and no changes have been made.
+      </div>
+
+      <p style="font-size: 13px; color: #64748b; margin-top: 24px;">
+        Button not working? Copy and paste this URL into your browser:<br>
+        <span style="word-break: break-all; color: #2563eb;">${resetUrl}</span>
+      </p>
+    </div>
+    <div class="footer">
+      © ${new Date().getFullYear()} Combine Drive · <a href="${appUrl}" style="color: #64748b;">${appUrl}</a>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim()
+
+  return sendEmail({
+    to,
+    subject: 'Reset your Combine Drive password',
+    html,
+    text: `Hi ${displayName}, reset your Combine Drive password by opening: ${resetUrl}. This link expires in ${expiresInMinutes} minutes.`,
+  })
+}
+
+/**
+ * Sends an alert email when a connected Google Drive account token expires or is revoked.
+ */
+export async function sendAccountDisconnectedEmail(params: {
+  to: string
+  userName?: string
+  accountEmail: string
+  reason?: string
+}): Promise<boolean> {
+  const appUrl = env.FRONTEND_URL || 'https://www.combined.top'
+  const { to, userName, accountEmail, reason } = params
+  const displayName = userName?.trim() || 'there'
+  const settingsUrl = `${appUrl}/settings`
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 20px; }
+    .container { max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; }
+    .header { background: linear-gradient(135deg, #ea580c, #dc2626); padding: 28px 24px; text-align: center; color: #ffffff; }
+    .header h1 { margin: 0; font-size: 22px; font-weight: 800; }
+    .content { padding: 32px 24px; line-height: 1.6; font-size: 15px; }
+    .btn { display: inline-block; background: #ea580c; color: #ffffff !important; text-decoration: none; padding: 13px 30px; border-radius: 10px; font-weight: 700; margin: 20px 0; }
+    .card { background: #fef2f2; border: 1px solid #fee2e2; border-radius: 10px; padding: 16px; margin: 18px 0; }
+    .footer { padding: 20px 24px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Action Required: Google Drive Disconnected</h1>
+    </div>
+    <div class="content">
+      <p>Hi <strong>${displayName}</strong>,</p>
+      <p>Your connected Google Drive account <strong>${accountEmail}</strong> needs to be re-authorized.</p>
+      
+      <div class="card">
+        <div style="font-size: 13px; font-weight: 700; color: #991b1b; text-transform: uppercase;">
+          What happened?
+        </div>
+        <p style="margin: 6px 0 0; font-size: 14px; color: #7f1d1d;">
+          Google reported that the authorization token has expired or access was revoked. File syncing and uploads routed to this account are paused until re-connected.
+          ${reason ? `<br><span style="font-size: 12px; opacity: 0.85;">Details: ${reason}</span>` : ''}
+        </p>
+      </div>
+
+      <div style="text-align: center;">
+        <a href="${settingsUrl}" class="btn">Reconnect Drive Account</a>
+      </div>
+
+      <p style="font-size: 13px; color: #64748b;">
+        Simply go to Settings in your Combine Drive dashboard and click <strong>Connect Drive</strong> to refresh access.
+      </p>
+    </div>
+    <div class="footer">
+      © ${new Date().getFullYear()} Combine Drive · <a href="${appUrl}" style="color: #64748b;">${appUrl}</a>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim()
+
+  return sendEmail({
+    to,
+    subject: `Action Required: Reconnect your Google Drive (${accountEmail})`,
+    html,
+    text: `Hi ${displayName}, your connected Google Drive account ${accountEmail} needs to be reconnected. Please visit ${settingsUrl} to reconnect.`,
+  })
+}
+

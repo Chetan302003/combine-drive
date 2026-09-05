@@ -2,6 +2,7 @@ import { google } from 'googleapis'
 import type { ConnectedAccount, ProviderConfig } from '@prisma/client'
 import { prisma } from '../../config/prisma.js'
 import { decryptText, encryptText } from '../../utils/crypto.js'
+import { sendAccountDisconnectedEmail } from '../../lib/email.js'
 
 const googleDriveFolderMimeType = 'application/vnd.google-apps.folder'
 const appFolderName = 'CombinedDrive'
@@ -22,17 +23,47 @@ export async function getAuthedGoogleClient(account: ConnectedAccount) {
   })
 
   if (account.tokenExpiresAt.getTime() < Date.now() + 60_000) {
-    const result = await client.refreshAccessToken()
-    const credentials = result.credentials
-    if (credentials.access_token) {
+    try {
+      const result = await client.refreshAccessToken()
+      const credentials = result.credentials
+      if (credentials.access_token) {
+        await prisma.connectedAccount.update({
+          where: { id: account.id },
+          data: {
+            accessTokenEncrypted: encryptText(credentials.access_token),
+            tokenExpiresAt: new Date(credentials.expiry_date ?? Date.now() + 3600_000),
+            status: 'connected',
+            lastError: null,
+          },
+        })
+        client.setCredentials(credentials)
+      }
+    } catch (err: any) {
+      const errorMsg = err?.message || 'Token refresh failed'
       await prisma.connectedAccount.update({
         where: { id: account.id },
         data: {
-          accessTokenEncrypted: encryptText(credentials.access_token),
-          tokenExpiresAt: new Date(credentials.expiry_date ?? Date.now() + 3600_000),
+          status: 'error',
+          lastError: errorMsg,
         },
-      })
-      client.setCredentials(credentials)
+      }).catch(() => {})
+
+      // Alert user via email about disconnected Google account
+      prisma.user.findUnique({
+        where: { id: account.userId },
+        select: { name: true, email: true },
+      }).then((user) => {
+        if (user) {
+          sendAccountDisconnectedEmail({
+            to: user.email,
+            userName: user.name,
+            accountEmail: account.email,
+            reason: errorMsg,
+          }).catch((emailErr) => console.warn('[google] Failed to send re-auth alert email:', emailErr))
+        }
+      }).catch(() => {})
+
+      throw new Error(`Google account authorization expired or revoked: ${errorMsg}`)
     }
   }
 

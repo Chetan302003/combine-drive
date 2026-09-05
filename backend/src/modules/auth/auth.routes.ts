@@ -6,14 +6,16 @@ import { env } from '../../config/env.js'
 import { requireAuth, type AuthRequest } from '../../middleware/auth.middleware.js'
 import { hashPassword, verifyPassword } from '../../utils/password.js'
 import { encryptText, hashToken, randomToken } from '../../utils/crypto.js'
-import { signAccessToken } from '../../utils/jwt.js'
+import { signAccessToken, signPasswordResetToken, verifyPasswordResetToken } from '../../utils/jwt.js'
 import { createOAuthClient, syncGoogleQuota } from '../google/google.service.js'
-import { sendWelcomeEmail } from '../../lib/email.js'
+import { sendWelcomeEmail, sendPasswordResetEmail } from '../../lib/email.js'
 
 export const authRouter = Router()
 
 const registerSchema = z.object({ name: z.string().min(2), email: z.string().email(), password: z.string().min(8), captchaToken: z.string().optional() })
 const loginSchema = z.object({ email: z.string().email(), password: z.string().min(1) })
+const forgotPasswordSchema = z.object({ email: z.string().email() })
+const resetPasswordSchema = z.object({ token: z.string().min(1), password: z.string().min(8) })
 const refreshSchema = z.object({ refreshToken: z.string().min(1) })
 const googleExchangeSchema = z.object({ token: z.string().min(1) })
 
@@ -63,6 +65,63 @@ authRouter.post('/login', async (req, res, next) => {
     if (!user || !(await verifyPassword(user.passwordHash, body.password))) return res.status(401).json({ code: 'AUTH_INVALID_CREDENTIALS', message: 'Invalid email or password.' })
     const tokens = await createSession(user.id, req)
     return res.json({ ...tokens, user: { id: user.id, name: user.name, email: user.email } })
+  } catch (error) {
+    return next(error)
+  }
+})
+
+authRouter.post('/forgot-password', async (req, res, next) => {
+  try {
+    const body = forgotPasswordSchema.parse(req.body)
+    const email = body.email.trim().toLowerCase()
+    const user = await prisma.user.findUnique({ where: { email } })
+    if (user) {
+      const resetToken = signPasswordResetToken(user.id, user.email, user.passwordHash)
+      const appUrl = env.FRONTEND_URL || 'https://www.combined.top'
+      const resetUrl = `${appUrl}/reset-password?token=${encodeURIComponent(resetToken)}`
+      sendPasswordResetEmail({
+        to: user.email,
+        name: user.name,
+        resetUrl,
+        expiresInMinutes: 15,
+      }).catch((err) => console.warn('[auth] Failed to send password reset email:', err))
+    }
+    return res.json({
+      message: 'If an account exists with this email, a password reset link has been sent.',
+    })
+  } catch (error) {
+    return next(error)
+  }
+})
+
+authRouter.post('/reset-password', async (req, res, next) => {
+  try {
+    const body = resetPasswordSchema.parse(req.body)
+    let payload
+    try {
+      payload = verifyPasswordResetToken(body.token)
+    } catch {
+      return res.status(400).json({ code: 'INVALID_OR_EXPIRED_TOKEN', message: 'Password reset link is invalid or has expired.' })
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: payload.sub } })
+    if (!user || user.passwordHash.slice(-12) !== payload.v) {
+      return res.status(400).json({ code: 'TOKEN_ALREADY_USED', message: 'This password reset link has already been used or is invalid.' })
+    }
+
+    const newHash = await hashPassword(body.password)
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash: newHash },
+    })
+
+    // Invalidate all active sessions for security
+    await prisma.userSession.updateMany({
+      where: { userId: user.id, revokedAt: null },
+      data: { revokedAt: new Date() },
+    })
+
+    return res.json({ message: 'Password reset successful. You can now log in with your new password.' })
   } catch (error) {
     return next(error)
   }

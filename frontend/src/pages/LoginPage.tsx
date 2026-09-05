@@ -57,7 +57,12 @@ export function LoginPage() {
         <form onSubmit={submit} className="mt-6 grid gap-4">
           <label className="grid gap-2 text-sm font-semibold">Email<Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
           <label className="grid gap-2 text-sm font-semibold">
-            Password
+            <div className="flex items-center justify-between">
+              <span>Password</span>
+              <Link to="/forgot-password" className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline">
+                Forgot password?
+              </Link>
+            </div>
             <div className="relative">
               <Input
                 type={showPassword ? 'text' : 'password'}
