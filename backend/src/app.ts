@@ -19,7 +19,47 @@ import { systemRouter } from './modules/system/system.routes.js'
 export const app = express()
 app.set('trust proxy', true)
 
-app.use(cors({ origin: env.FRONTEND_URL }))
+const allowedOrigins = new Set<string>()
+
+const addAllowedOrigin = (raw?: string) => {
+  if (!raw) return
+  raw.split(',').forEach((item) => {
+    const trimmed = item.trim().replace(/\/+$/, '')
+    if (trimmed) allowedOrigins.add(trimmed)
+  })
+}
+
+addAllowedOrigin(env.FRONTEND_URL)
+addAllowedOrigin(env.ALLOWED_ORIGINS)
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true)
+      const normalizedOrigin = origin.trim().replace(/\/+$/, '')
+      if (allowedOrigins.has(normalizedOrigin)) {
+        return callback(null, true)
+      }
+
+      try {
+        const originUrl = new URL(normalizedOrigin)
+        const originHostname = originUrl.hostname.replace(/^www\./, '')
+        for (const allowed of allowedOrigins) {
+          try {
+            const allowedUrl = new URL(allowed)
+            const allowedHostname = allowedUrl.hostname.replace(/^www\./, '')
+            if (originUrl.protocol === allowedUrl.protocol && originHostname === allowedHostname) {
+              return callback(null, true)
+            }
+          } catch {}
+        }
+      } catch {}
+
+      return callback(null, false)
+    },
+    credentials: true,
+  })
+)
 app.use(express.json({ limit: '1mb' }))
 
 app.get('/health', async (_req, res) => {
