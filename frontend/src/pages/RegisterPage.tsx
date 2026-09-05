@@ -241,6 +241,11 @@ export function RegisterPage() {
           <Button variant="outline" disabled={googleLoading} onClick={continueWithGoogle}><GoogleLogo />{googleLoading ? 'Redirecting...' : 'Continue with Google and connect Drive'}</Button>
         </div>
         <p className="mt-5 text-center text-sm text-slate-500">Already registered? <Link className="font-bold text-blue-600" to="/login">Login</Link></p>
+        <div className="mt-6 border-t border-slate-100 pt-4 flex items-center justify-center gap-3 text-xs text-slate-400">
+          <Link to="/terms" className="hover:text-slate-600 transition">Terms of Service</Link>
+          <span>•</span>
+          <Link to="/privacy" className="hover:text-slate-600 transition">Privacy Policy</Link>
+        </div>
       </Card>
     </main>
   )

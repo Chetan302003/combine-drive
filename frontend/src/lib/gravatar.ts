@@ -19,20 +19,15 @@ export async function getGravatarUrl(email: string | undefined, size: number) {
     hash = simpleHash(seed)
   }
 
-  // Try Gravatar first; fallback to DiceBear bottts (cute robots)
-  // d=404 means Gravatar returns 404 if no image → we catch and fall through to DiceBear
+  const diceBearUrl = `https://api.dicebear.com/8.x/bottts/svg?seed=${encodeURIComponent(hash)}&size=${size}&backgroundColor=b6e3f4,c0aede,d1f4cc,ffdfbf,ffd5dc`
+
   if (normalized && hash.length === 64) {
-    const gravatarUrl = `https://www.gravatar.com/avatar/${hash}?s=${size}&d=404`
-    try {
-      const res = await fetch(gravatarUrl, { method: 'HEAD' })
-      if (res.ok) return gravatarUrl
-    } catch {
-      // Network error → fall through
-    }
+    // Gravatar natively redirects to the fallback image URL (&d=...) when no avatar exists.
+    // This avoids preflight HEAD network calls and eliminates 404 errors from browser devtools.
+    return `https://www.gravatar.com/avatar/${hash}?s=${size}&d=${encodeURIComponent(diceBearUrl)}`
   }
 
-  // DiceBear bottts — cute, colorful robot avatars
-  return `https://api.dicebear.com/8.x/bottts/svg?seed=${encodeURIComponent(hash)}&size=${size}&backgroundColor=b6e3f4,c0aede,d1f4cc,ffdfbf,ffd5dc`
+  return diceBearUrl
 }
 
 function simpleHash(str: string): string {

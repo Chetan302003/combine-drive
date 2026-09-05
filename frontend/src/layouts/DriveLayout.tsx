@@ -1,5 +1,5 @@
 import { type FormEvent, type ReactNode, useEffect, useState } from 'react'
-import { Outlet, useOutletContext, NavLink, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
+import { Outlet, useOutletContext, NavLink, Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   Bell,
   Braces,
@@ -185,6 +185,11 @@ function Sidebar({ onNavigate, user, storage, breakdown, onLogout }: { onNavigat
         <Button variant="danger" size="sm" className="mt-3 w-full justify-start h-10 px-3 text-[13px] font-bold" onClick={onLogout}>
           <LogOut className="h-4 w-4" />Log Out
         </Button>
+        <div className="mt-2.5 flex items-center justify-center gap-2 text-[11px] text-slate-400">
+          <Link to="/terms" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 transition">Terms</Link>
+          <span>•</span>
+          <Link to="/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-slate-600 transition">Privacy</Link>
+        </div>
       </div>
     </aside>
   )
