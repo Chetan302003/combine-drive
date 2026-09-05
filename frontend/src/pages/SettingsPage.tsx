@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, type FormEvent } from 'react'
-import { Bell, Cloud, Database, Globe, HardDrive, Link2, RefreshCw, Trash2 } from 'lucide-react'
+import { Activity, Bell, Cloud, Database, Globe, HardDrive, Link2, RefreshCw, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { DummyModal } from '@/components/drive/DummyModal'
@@ -60,12 +60,39 @@ export function SettingsPage() {
   const [reconnectCount, setReconnectCount] = useState(0)
   const logContainerRef = useRef<HTMLDivElement>(null)
 
+  // Service health states
+  const [healthStatus, setHealthStatus] = useState<'checking' | 'ok' | 'error'>('checking')
+  const [dbStatus, setDbStatus] = useState<'checking' | 'ok' | 'error'>('checking')
+  const [healthUptime, setHealthUptime] = useState<number | null>(null)
+  const [healthCheckedAt, setHealthCheckedAt] = useState<Date | null>(null)
+  const [checkingHealth, setCheckingHealth] = useState(false)
+
   // Backup & Restore states
   const [downloadingBackup, setDownloadingBackup] = useState(false)
   const [restoringBackup, setRestoringBackup] = useState(false)
   const [restoreFile, setRestoreFile] = useState<File | null>(null)
   const [restoreMessage, setRestoreMessage] = useState('')
   const [restoreSuccess, setRestoreSuccess] = useState(false)
+
+  async function checkHealth() {
+    setCheckingHealth(true)
+    setHealthStatus('checking')
+    setDbStatus('checking')
+    try {
+      const res = await fetch(`${API_URL}/health`)
+      if (!res.ok) throw new Error('not ok')
+      const data: { status: string; db?: string; uptime?: number } = await res.json()
+      setHealthStatus(data.status === 'ok' ? 'ok' : 'error')
+      setDbStatus(data.db === 'ok' ? 'ok' : data.db === 'error' ? 'error' : 'ok')
+      setHealthUptime(data.uptime ?? null)
+    } catch {
+      setHealthStatus('error')
+      setDbStatus('error')
+    } finally {
+      setHealthCheckedAt(new Date())
+      setCheckingHealth(false)
+    }
+  }
 
   async function downloadBackup() {
     setDownloadingBackup(true)
@@ -256,6 +283,7 @@ export function SettingsPage() {
 
   useEffect(() => {
     load().catch((error) => setMessage(error instanceof Error ? error.message : 'Failed to load settings'))
+    checkHealth()
   }, [])
 
   useEffect(() => {
@@ -604,6 +632,76 @@ export function SettingsPage() {
           </Card>
         </div>
         <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 lg:gap-3">
+          {/* Service Health Card */}
+          <Card className="p-4 sm:col-span-3 lg:col-span-1">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Activity className="h-5 w-5 text-blue-600" />
+                <h2 className="text-[14px] font-bold">Service Health</h2>
+              </div>
+              <button
+                onClick={checkHealth}
+                disabled={checkingHealth}
+                className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-slate-500 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50 transition-colors"
+              >
+                <RefreshCw className={checkingHealth ? 'h-3 w-3 animate-spin' : 'h-3 w-3'} />
+                {checkingHealth ? 'Checking' : 'Refresh'}
+              </button>
+            </div>
+            <div className="grid gap-2">
+              {/* API row */}
+              <div className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 px-3 py-2">
+                <span className="text-[12px] font-semibold text-slate-600 dark:text-slate-400">API Server</span>
+                <span className="flex items-center gap-1.5">
+                  <span className={[
+                    'h-2 w-2 rounded-full',
+                    healthStatus === 'ok' ? 'bg-emerald-500 shadow-[0_0_6px_2px_rgba(16,185,129,0.4)] animate-pulse' :
+                    healthStatus === 'error' ? 'bg-red-500 shadow-[0_0_6px_2px_rgba(239,68,68,0.4)]' :
+                    'bg-amber-400 shadow-[0_0_6px_2px_rgba(251,191,36,0.4)] animate-pulse'
+                  ].join(' ')} />
+                  <span className={[
+                    'text-[11px] font-bold',
+                    healthStatus === 'ok' ? 'text-emerald-600' :
+                    healthStatus === 'error' ? 'text-red-600' : 'text-amber-500'
+                  ].join(' ')}>
+                    {healthStatus === 'ok' ? 'Online' : healthStatus === 'error' ? 'Offline' : 'Checking…'}
+                  </span>
+                </span>
+              </div>
+              {/* DB row */}
+              <div className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 px-3 py-2">
+                <span className="text-[12px] font-semibold text-slate-600 dark:text-slate-400">Database</span>
+                <span className="flex items-center gap-1.5">
+                  <span className={[
+                    'h-2 w-2 rounded-full',
+                    dbStatus === 'ok' ? 'bg-emerald-500 shadow-[0_0_6px_2px_rgba(16,185,129,0.4)] animate-pulse' :
+                    dbStatus === 'error' ? 'bg-red-500 shadow-[0_0_6px_2px_rgba(239,68,68,0.4)]' :
+                    'bg-amber-400 shadow-[0_0_6px_2px_rgba(251,191,36,0.4)] animate-pulse'
+                  ].join(' ')} />
+                  <span className={[
+                    'text-[11px] font-bold',
+                    dbStatus === 'ok' ? 'text-emerald-600' :
+                    dbStatus === 'error' ? 'text-red-600' : 'text-amber-500'
+                  ].join(' ')}>
+                    {dbStatus === 'ok' ? 'Connected' : dbStatus === 'error' ? 'Error' : 'Checking…'}
+                  </span>
+                </span>
+              </div>
+              {/* Meta row */}
+              {healthCheckedAt && (
+                <div className="flex items-center justify-between px-1 pt-0.5">
+                  <span className="text-[10px] text-slate-400">
+                    Checked {healthCheckedAt.toLocaleTimeString()}
+                  </span>
+                  {healthUptime !== null && (
+                    <span className="text-[10px] text-slate-400">
+                      Uptime {Math.floor(healthUptime / 3600)}h {Math.floor((healthUptime % 3600) / 60)}m
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          </Card>
           <Card className="p-4"><HardDrive className="h-5 w-5 text-blue-600" /><h2 className="mt-2 text-[14px] font-bold">Storage</h2><p className="mt-1 text-[12px] text-slate-500">Connected accounts: {accounts.length}</p></Card>
           <Card className="p-4"><Bell className="h-5 w-5 text-blue-600" /><h2 className="mt-2 text-[14px] font-bold">Notifications</h2><p className="mt-1 text-[12px] text-slate-500">Email and app alerts are active.</p></Card>
           <Card className="p-4"><Globe className="h-5 w-5 text-blue-600" /><h2 className="mt-2 text-[14px] font-bold">Region</h2><p className="mt-1 text-[12px] text-slate-500">Workspace region: local gateway.</p></Card>

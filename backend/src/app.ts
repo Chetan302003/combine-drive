@@ -22,7 +22,16 @@ app.set('trust proxy', true)
 app.use(cors({ origin: env.FRONTEND_URL }))
 app.use(express.json({ limit: '1mb' }))
 
-app.get('/health', (_req, res) => res.json({ status: 'ok' }))
+app.get('/health', async (_req, res) => {
+  let db: 'ok' | 'error' = 'ok'
+  try {
+    const { prisma } = await import('./config/prisma.js')
+    await prisma.$queryRaw`SELECT 1`
+  } catch {
+    db = 'error'
+  }
+  res.json({ status: 'ok', db, uptime: Math.floor(process.uptime()) })
+})
 app.use('/api', publicApiRouter)
 app.use('/public', publicRouter)
 app.use('/auth', authRouter)
