@@ -8,6 +8,7 @@ import { hashPassword, verifyPassword } from '../../utils/password.js'
 import { encryptText, hashToken, randomToken } from '../../utils/crypto.js'
 import { signAccessToken } from '../../utils/jwt.js'
 import { createOAuthClient, syncGoogleQuota } from '../google/google.service.js'
+import { sendWelcomeEmail } from '../../lib/email.js'
 
 export const authRouter = Router()
 
@@ -48,6 +49,7 @@ authRouter.post('/register', async (req, res, next) => {
     if (existing) return res.status(409).json({ code: 'AUTH_EMAIL_TAKEN', message: 'Email already registered.' })
     const user = await prisma.user.create({ data: { name: body.name, email: body.email, passwordHash: await hashPassword(body.password) } })
     const tokens = await createSession(user.id, req)
+    sendWelcomeEmail(user.email, user.name).catch(() => {})
     return res.status(201).json({ ...tokens, user: { id: user.id, name: user.name, email: user.email } })
   } catch (error) {
     return next(error)

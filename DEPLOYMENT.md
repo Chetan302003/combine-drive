@@ -38,6 +38,8 @@ This guide will walk you through setting up 9Drive entirely on free hosting plat
    - `GOOGLE_CLIENT_SECRET`: Your Google OAuth Client Secret.
    - `GOOGLE_REDIRECT_URI`: Set this to `https://your-backend-url.onrender.com/connected-accounts/google/callback`.
    - `SELF_URL`: Set this to your Render backend URL (e.g. `https://9drive-backend.onrender.com`). This enables the built-in keepalive — the backend will self-ping its own `/health` endpoint and run a lightweight DB query every 14 minutes to prevent Render from spinning down and Aiven MySQL from going idle.
+   - `RESEND_API_KEY`: *(Optional)* Your API key from [Resend](https://resend.com) (e.g. `re_...`) for sending welcome and file/folder invite emails (free tier allows 3,000 emails/month).
+   - `RESEND_FROM_EMAIL`: *(Optional)* Sender address (e.g. `Combine Drive <onboarding@resend.dev>` for testing, or `Combine Drive <noreply@combined.top>` once domain is verified).
 6. Click **Create Web Service** to deploy the backend. Wait for it to build and start.
 7. Once successfully deployed, copy the **Render URL** for your backend service (e.g. `https://9drive-backend.onrender.com`).
 8. In your **Render Web Service Settings** > scroll to **Health Check Path** and set it to `/health`. Render will use this to verify service health during deployments.

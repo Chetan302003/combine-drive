@@ -19,15 +19,9 @@ export async function getGravatarUrl(email: string | undefined, size: number) {
     hash = simpleHash(seed)
   }
 
-  const diceBearUrl = `https://api.dicebear.com/8.x/bottts/svg?seed=${encodeURIComponent(hash)}&size=${size}&backgroundColor=b6e3f4,c0aede,d1f4cc,ffdfbf,ffd5dc`
-
-  if (normalized && hash.length === 64) {
-    // Gravatar natively redirects to the fallback image URL (&d=...) when no avatar exists.
-    // This avoids preflight HEAD network calls and eliminates 404 errors from browser devtools.
-    return `https://www.gravatar.com/avatar/${hash}?s=${size}&d=${encodeURIComponent(diceBearUrl)}`
-  }
-
-  return diceBearUrl
+  // Return DiceBear 9.x avatar directly using the hashed email as the seed.
+  // This avoids Gravatar's broken WordPress Photon (i1.wp.com) proxy which causes 400 errors on SVG URLs.
+  return `https://api.dicebear.com/9.x/bottts/svg?seed=${encodeURIComponent(hash)}&size=${size}`
 }
 
 function simpleHash(str: string): string {

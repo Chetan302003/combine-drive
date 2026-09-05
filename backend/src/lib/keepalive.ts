@@ -21,7 +21,7 @@ const state: KeepaliveState = {
   isRunning: false,
   selfUrl: '',
   healthUrl: '',
-  intervalMinutes: 14,
+  intervalMinutes: Math.round(INTERVAL_MS / 60_000),
   totalPings: 0,
   lastPingAt: null,
   lastPingStatus: null,

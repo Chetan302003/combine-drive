@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { z } from 'zod'
 import { prisma } from '../../config/prisma.js'
 import { requireAuth, type AuthRequest } from '../../middleware/auth.middleware.js'
+import { sendInviteEmail } from '../../lib/email.js'
 
 export const inviteRouter = Router()
 inviteRouter.use(requireAuth)
@@ -72,7 +73,7 @@ inviteRouter.post('/', async (req: AuthRequest, res, next) => {
   try {
     const body = inviteSchema.parse(req.body)
     const email = body.email.trim().toLowerCase()
-    const inviter = await prisma.user.findUniqueOrThrow({ where: { id: req.user!.id }, select: { email: true } })
+    const inviter = await prisma.user.findUniqueOrThrow({ where: { id: req.user!.id }, select: { name: true, email: true } })
     if (email === inviter.email) return res.status(400).json({ code: 'INVITE_SELF_NOT_ALLOWED', message: 'You cannot invite yourself.' })
     await assertTargetOwner(req.user!.id, body.targetType, body.targetId)
     const existingUser = await prisma.user.findUnique({ where: { email }, select: { id: true, name: true, email: true } })
@@ -82,7 +83,21 @@ inviteRouter.post('/', async (req: AuthRequest, res, next) => {
       update: { role: body.role, status: existingUser ? 'accepted' : 'pending', acceptedAt: existingUser ? new Date() : null, revokedAt: null },
     })
     const targetByKey = await resolveTargets([invite])
-    return res.status(201).json({ invite: serializeInvite(invite, targetByKey.get(`${invite.targetType}:${invite.targetId}`) ?? null, existingUser) })
+    const targetObj = targetByKey.get(`${invite.targetType}:${invite.targetId}`)
+
+    // Send invite notification email in background (non-blocking)
+    if (targetObj) {
+      sendInviteEmail({
+        to: email,
+        inviterName: inviter.name || '',
+        inviterEmail: inviter.email,
+        targetName: targetObj.name,
+        targetType: body.targetType,
+        role: body.role,
+      }).catch((err) => console.warn('[invite] Failed to trigger invite email:', err))
+    }
+
+    return res.status(201).json({ invite: serializeInvite(invite, targetObj ?? null, existingUser) })
   } catch (error) {
     return next(error)
   }

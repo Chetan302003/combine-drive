@@ -15,6 +15,8 @@ const envSchema = z.object({
   MAX_UPLOAD_BYTES: z.coerce.number().default(5 * 1024 * 1024 * 1024),
   RECAPTCHA_SECRET_KEY: z.string().optional(),
   SELF_URL: z.string().url().optional(),
+  RESEND_API_KEY: z.string().optional(),
+  RESEND_FROM_EMAIL: z.string().optional(),
 })
 
 export const env = envSchema.parse(process.env)
