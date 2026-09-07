@@ -8,7 +8,7 @@ import { hashPassword, verifyPassword } from '../../utils/password.js'
 import { encryptText, hashToken, randomToken } from '../../utils/crypto.js'
 import { signAccessToken, signPasswordResetToken, verifyPasswordResetToken } from '../../utils/jwt.js'
 import { createOAuthClient, syncGoogleQuota } from '../google/google.service.js'
-import { sendWelcomeEmail, sendPasswordResetEmail } from '../../lib/email.js'
+import { sendWelcomeEmail, sendPasswordResetEmail, sendPasswordChangedEmail } from '../../lib/email.js'
 
 export const authRouter = Router()
 
@@ -120,6 +120,9 @@ authRouter.post('/reset-password', async (req, res, next) => {
       where: { userId: user.id, revokedAt: null },
       data: { revokedAt: new Date() },
     })
+
+    sendPasswordChangedEmail({ to: user.email, name: user.name })
+      .catch((error) => console.warn('[auth] Failed to send password changed email:', error))
 
     return res.json({ message: 'Password reset successful. You can now log in with your new password.' })
   } catch (error) {

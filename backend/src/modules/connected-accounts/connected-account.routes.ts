@@ -8,6 +8,7 @@ import { decryptText, encryptText, hashToken, randomToken } from '../../utils/cr
 import { hashPassword } from '../../utils/password.js'
 import { createOAuthClient, syncGoogleQuota } from '../google/google.service.js'
 import { syncS3Quota, testS3Connection } from '../s3/s3.service.js'
+import { sendDriveConnectedEmail } from '../../lib/email.js'
 
 export const connectedAccountRouter = Router()
 
@@ -240,6 +241,7 @@ connectedAccountRouter.get('/google/callback', async (req, res, next) => {
 
     if (oauthState.flow !== 'connect' || !oauthState.userId) return res.status(400).json({ code: 'GOOGLE_OAUTH_STATE_INVALID', message: 'OAuth state expired.' })
     const existingAccount = await prisma.connectedAccount.findUnique({ where: { userId_provider_providerAccountId: { userId: oauthState.userId, provider: 'google_drive', providerAccountId } } })
+    const user = await prisma.user.findUniqueOrThrow({ where: { id: oauthState.userId } })
     const refreshTokenEncrypted = tokens.refresh_token ? encryptText(tokens.refresh_token) : existingAccount?.refreshTokenEncrypted
     if (!refreshTokenEncrypted) return res.status(400).json({ code: 'GOOGLE_OAUTH_FAILED', message: 'Google did not return required tokens.' })
 
@@ -273,6 +275,15 @@ connectedAccountRouter.get('/google/callback', async (req, res, next) => {
     })
     await prisma.oauthState.update({ where: { id: oauthState.id }, data: { usedAt: new Date() } })
     await syncGoogleQuota(account.id)
+    if (!existingAccount) {
+      const recipients = [...new Set([user.email, email])]
+      void Promise.all(recipients.map((recipient) => sendDriveConnectedEmail({
+        to: recipient,
+        name: user.name,
+        driveEmail: email,
+        driveName: profile.data.name,
+      }))).catch((error) => console.warn('[connected-accounts] Failed to send Drive connection email:', error))
+    }
     return res.redirect(`${env.FRONTEND_URL}/google-connected?status=success`)
   } catch (error) {
     console.error('Google OAuth callback failed:', error)

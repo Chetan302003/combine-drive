@@ -121,6 +121,63 @@ export async function sendWelcomeEmail(to: string, name: string): Promise<boolea
 }
 
 /**
+ * Sends a confirmation when a new Google Drive account is connected.
+ */
+export async function sendDriveConnectedEmail(params: {
+  to: string
+  name: string
+  driveEmail: string
+  driveName?: string | null
+}): Promise<boolean> {
+  const appUrl = env.FRONTEND_URL || 'https://www.combined.top'
+  const displayName = params.name.trim() || 'there'
+  const driveLabel = params.driveName?.trim() || params.driveEmail
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 20px; }
+    .container { max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; }
+    .header { background: linear-gradient(135deg, #2563eb, #4f46e5); padding: 32px 24px; text-align: center; color: #ffffff; }
+    .header h1 { margin: 0; font-size: 24px; font-weight: 800; }
+    .content { padding: 32px 24px; line-height: 1.6; font-size: 15px; }
+    .card { background: #f1f5f9; border-radius: 12px; padding: 16px; margin: 20px 0; }
+    .btn { display: inline-block; background: #2563eb; color: #ffffff !important; text-decoration: none; padding: 12px 28px; border-radius: 10px; font-weight: 700; margin: 20px 0; }
+    .footer { padding: 20px 24px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header"><h1>Google Drive Connected</h1></div>
+    <div class="content">
+      <p>Hi <strong>${displayName}</strong>,</p>
+      <p>A new Google Drive account has been connected to your Combine Drive account.</p>
+      <div class="card">
+        <strong>Connected Drive:</strong><br>
+        ${driveLabel}<br>
+        <span style="font-size: 13px; color: #64748b;">${params.driveEmail}</span>
+      </div>
+      <p>Your available storage has been updated. You can manage your connected accounts from Settings.</p>
+      <div style="text-align: center;"><a href="${appUrl}/settings" class="btn">Open Settings</a></div>
+    </div>
+    <div class="footer">© ${new Date().getFullYear()} Combine Drive. All rights reserved.</div>
+  </div>
+</body>
+</html>
+  `.trim()
+
+  return sendEmail({
+    to: params.to,
+    subject: 'Google Drive connected to Combine Drive',
+    html,
+    text: `Hi ${displayName}, Google Drive account ${params.driveEmail} was connected to your Combine Drive account. Manage it at ${appUrl}/settings`,
+  })
+}
+
+/**
  * Sends an invitation email when a user shares a file or folder.
  */
 export async function sendInviteEmail(params: {
@@ -262,6 +319,54 @@ export async function sendPasswordResetEmail(params: {
     subject: 'Reset your Combine Drive password',
     html,
     text: `Hi ${displayName}, reset your Combine Drive password by opening: ${resetUrl}. This link expires in ${expiresInMinutes} minutes.`,
+  })
+}
+
+export async function sendPasswordChangedEmail(params: {
+  to: string
+  name: string
+}): Promise<boolean> {
+  const appUrl = env.FRONTEND_URL || 'https://www.combined.top'
+  const displayName = params.name.trim() || 'there'
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; color: #1e293b; margin: 0; padding: 20px; }
+    .container { max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; }
+    .header { background: linear-gradient(135deg, #16a34a, #15803d); padding: 28px 24px; text-align: center; color: #ffffff; }
+    .header h1 { margin: 0; font-size: 22px; font-weight: 800; }
+    .content { padding: 32px 24px; line-height: 1.6; font-size: 15px; }
+    .warning { background: #fffbeb; border: 1px solid #fef3c7; border-radius: 10px; padding: 14px 18px; margin: 20px 0; font-size: 13px; color: #92400e; }
+    .btn { display: inline-block; background: #16a34a; color: #ffffff !important; text-decoration: none; padding: 12px 28px; border-radius: 10px; font-weight: 700; margin: 20px 0; }
+    .footer { padding: 20px 24px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header"><h1>Your Password Was Changed</h1></div>
+    <div class="content">
+      <p>Hi <strong>${displayName}</strong>,</p>
+      <p>Your Combine Drive password was changed successfully.</p>
+      <div class="warning">
+        <strong>Security Notice:</strong> All existing sessions were signed out. If you did not make this change, reset your password again immediately and contact support.
+      </div>
+      <div style="text-align: center;"><a href="${appUrl}/login" class="btn">Go to Combine Drive</a></div>
+    </div>
+    <div class="footer">© ${new Date().getFullYear()} Combine Drive. All rights reserved.</div>
+  </div>
+</body>
+</html>
+  `.trim()
+
+  return sendEmail({
+    to: params.to,
+    subject: 'Your Combine Drive password was changed',
+    html,
+    text: `Hi ${displayName}, your Combine Drive password was changed successfully. All existing sessions were signed out. If you did not make this change, reset your password again immediately and contact support.`,
   })
 }
 
