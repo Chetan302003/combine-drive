@@ -38,7 +38,7 @@ const menu = [
   { label: 'All Files', icon: FileArchive, href: '/all-files' },
   { label: 'Quota Tracker', icon: Gauge, href: '/quota' },
   { label: 'Shared With Me', icon: Share2, href: '/shared' },
-  { label: 'Starred', icon: Star, href: '/starred', disabled: true },
+  { label: 'Starred', icon: Star, href: '/starred' },
   { label: 'Recycle Bin', icon: Trash2, href: '/trash' },
   { label: 'Activity Log', icon: History, href: '/activity' },
   { label: 'Setting', icon: Settings, href: '/settings' },
