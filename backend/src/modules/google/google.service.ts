@@ -156,6 +156,8 @@ export async function syncGoogleAppFolderFiles(accountId: string, userId: string
 
   const parentsQuery = parentIds.map((id) => `'${id}' in parents`).join(' or ')
   const q = `(${parentsQuery}) and mimeType != '${googleDriveFolderMimeType}' and trashed = false`
+// Queries all non-folder files across your entire Google Drive
+//  const q = `mimeType != '${googleDriveFolderMimeType}' and trashed = false`
 
   do {
     const response = await drive.files.list({
@@ -182,6 +184,8 @@ export async function syncGoogleAppFolderFiles(accountId: string, userId: string
 
   const folderIdMap = new Map(userFolders.map((f) => [f.providerFolderId, f.id]))
 
+  // for (const driveFile of driveFiles) {
+  // const dbFolderId = folderIdMap.get(driveFile.parentId) ?? null
   for (const driveFile of driveFiles) {
     const dbFolderId = driveFile.parentId === appFolderId ? null : (folderIdMap.get(driveFile.parentId) ?? null)
     const existing = existingByProviderId.get(driveFile.id)
