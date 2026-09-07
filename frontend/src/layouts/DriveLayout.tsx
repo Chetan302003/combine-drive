@@ -34,7 +34,14 @@ import { clearAuthSession, getStoredUser, updateStoredUser, type AuthUser } from
 import { getGravatarUrl } from '@/lib/gravatar'
 import { cn } from '@/lib/utils'
 
-const menu = [
+type MenuItem = {
+  label: string
+  icon: any
+  href: string
+  disabled?: boolean
+}
+
+const menu: MenuItem[] = [
   { label: 'All Files', icon: FileArchive, href: '/all-files' },
   { label: 'Quota Tracker', icon: Gauge, href: '/quota' },
   { label: 'Shared With Me', icon: Share2, href: '/shared' },
