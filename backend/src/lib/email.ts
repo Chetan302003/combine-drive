@@ -18,7 +18,7 @@ export async function sendEmail({ to, subject, html, text }: SendEmailParams): P
     return false
   }
 
-  const fromEmail = env.RESEND_FROM_EMAIL?.trim() || 'Combine Drive <onboarding@resend.dev>'
+  const fromEmail = env.RESEND_FROM_EMAIL?.trim() || 'Combine Drive <noreply@combined.top>'
   const recipients = Array.isArray(to) ? to : [to]
 
   try {
