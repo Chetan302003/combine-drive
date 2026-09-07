@@ -18,11 +18,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies
-        uses: bcomnes/npm-install@v2
-        with:
-          # Installs mysql2 package temporarily for the script
-          general: 'mysql2'
+      - name: Install mysql2 dependency
+        run: npm install mysql2
 
       - name: Run database ping script
         env:
