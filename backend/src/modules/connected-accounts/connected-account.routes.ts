@@ -5,10 +5,10 @@ import { env } from '../../config/env.js'
 import { prisma } from '../../config/prisma.js'
 import { requireAuth, type AuthRequest } from '../../middleware/auth.middleware.js'
 import { decryptText, encryptText, hashToken, randomToken } from '../../utils/crypto.js'
-import { hashPassword } from '../../utils/password.js'
+import { hashPassword, verifyPassword } from '../../utils/password.js'
 import { createOAuthClient, syncGoogleQuota } from '../google/google.service.js'
 import { syncS3Quota, testS3Connection } from '../s3/s3.service.js'
-import { sendDriveConnectedEmail } from '../../lib/email.js'
+import { sendDriveConnectedEmail, sendFullDriveAccessAlertEmail } from '../../lib/email.js'
 
 export const connectedAccountRouter = Router()
 
@@ -49,6 +49,7 @@ connectedAccountRouter.get('/', requireAuth, async (req: AuthRequest, res, next)
     return res.json({
       accounts: syncedAccounts.map(({ accessTokenEncrypted: _a, refreshTokenEncrypted: _r, storageAccount, ...account }) => ({
         ...account,
+        fullDriveSync: Array.isArray(account.scopes) && (account.scopes as string[]).includes('feature:full_drive_sync'),
         storageAccount: storageAccount ? {
           ...storageAccount,
           totalBytes: storageAccount.totalBytes?.toString() ?? null,
@@ -319,3 +320,67 @@ connectedAccountRouter.delete('/:id', requireAuth, async (req: AuthRequest, res,
     return next(error)
   }
 })
+
+const syncModeSchema = z.object({
+  mode: z.enum(['dedicated', 'full']),
+  password: z.string().optional(),
+})
+
+connectedAccountRouter.post('/:id/sync-mode', requireAuth, async (req: AuthRequest, res, next) => {
+  try {
+    const accountId = String(req.params.id)
+    const body = syncModeSchema.parse(req.body)
+    const account = await prisma.connectedAccount.findFirstOrThrow({ where: { id: accountId, userId: req.user!.id } })
+
+    const user = await prisma.user.findUniqueOrThrow({ where: { id: req.user!.id } })
+    const currentScopes: string[] = Array.isArray(account.scopes) ? ([...(account.scopes as string[])]) : []
+
+    if (body.mode === 'full') {
+      if (!body.password) {
+        return res.status(400).json({ code: 'PASSWORD_REQUIRED', message: 'Password confirmation is required to enable Entire Google Drive sync.' })
+      }
+      const isValid = await verifyPassword(user.passwordHash, body.password)
+      if (!isValid) {
+        return res.status(401).json({ code: 'INVALID_PASSWORD', message: 'Incorrect password. Confirmation failed.' })
+      }
+      if (!currentScopes.includes('feature:full_drive_sync')) {
+        currentScopes.push('feature:full_drive_sync')
+      }
+    } else {
+      const idx = currentScopes.indexOf('feature:full_drive_sync')
+      if (idx !== -1) {
+        currentScopes.splice(idx, 1)
+      }
+      // When reverting back to dedicated mode, remove/delete external files synced from outside CombinedDrive
+      await prisma.file.updateMany({
+        where: { userId: req.user!.id, connectedAccountId: account.id, checksum: 'external_drive' },
+        data: { status: 'deleted', deletedAt: new Date() },
+      })
+    }
+
+    await prisma.connectedAccount.update({
+      where: { id: account.id },
+      data: { scopes: currentScopes },
+    })
+
+    if (body.mode === 'full') {
+      const recipientEmails = Array.from(new Set([user.email, account.email].filter(Boolean)))
+      sendFullDriveAccessAlertEmail({
+        to: recipientEmails,
+        userName: user.name ?? undefined,
+        accountEmail: account.email,
+      }).catch((err) => {
+        console.warn('[connected-accounts] Failed to send full drive access alert email:', err)
+      })
+    }
+
+    return res.json({
+      status: 'ok',
+      mode: body.mode,
+      fullDriveSync: currentScopes.includes('feature:full_drive_sync'),
+    })
+  } catch (error) {
+    return next(error)
+  }
+})
+

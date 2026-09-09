@@ -29,6 +29,8 @@ export type FileItem = {
   openedDate?: string
   folderId?: string | null
   folderName?: string | null
+  checksum?: string | null
+  isExternal?: boolean
 }
 
 export const folders: FolderItem[] = [

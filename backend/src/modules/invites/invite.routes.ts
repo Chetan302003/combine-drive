@@ -13,7 +13,16 @@ type InviteRecord = { id: string; inviterId: string; inviteeEmail: string; targe
 type TargetRecord = { id: string; name: string; type: 'file' | 'folder'; mimeType?: string; sizeBytes?: string; folderId?: string | null }
 
 async function assertTargetOwner(userId: string, targetType: string, targetId: string) {
-  if (targetType === 'file') return prisma.file.findFirstOrThrow({ where: { id: targetId, userId, status: 'active' } })
+  if (targetType === 'file') {
+    const file = await prisma.file.findFirstOrThrow({ where: { id: targetId, userId, status: 'active' } })
+    if (file.checksum === 'external_drive') {
+      const error: any = new Error('Invitations are disabled for files outside the CombinedDrive folder for your privacy and security.')
+      error.statusCode = 403
+      error.code = 'INVITE_RESTRICTED_FOR_EXTERNAL_FILES'
+      throw error
+    }
+    return file
+  }
   return prisma.folder.findFirstOrThrow({ where: { id: targetId, userId, deletedAt: null } })
 }
 

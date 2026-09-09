@@ -58,6 +58,7 @@ export async function sendEmail({ to, subject, html, text }: SendEmailParams): P
 export async function sendWelcomeEmail(to: string, name: string): Promise<boolean> {
   const appUrl = env.FRONTEND_URL || 'https://www.combined.top'
   const displayName = name.trim() || 'there'
+  const supportEmail = 'support@combined.top'
 
   const html = `
 <!DOCTYPE html>
@@ -104,7 +105,9 @@ export async function sendWelcomeEmail(to: string, name: string): Promise<boolea
       </p>
     </div>
     <div class="footer">
-      © ${new Date().getFullYear()} Combine Drive. All rights reserved.<br>
+      Combine Drive Security · Need help? Contact <a href="mailto:${supportEmail}">${supportEmail}</a><br>
+      © ${new Date().getFullYear()} Combine Drive · <a href="${appUrl}">${appUrl}</a>
+      <br>
       <a href="${appUrl}/privacy" style="color: #64748b; text-decoration: underline;">Privacy Policy</a> · <a href="${appUrl}/terms" style="color: #64748b; text-decoration: underline;">Terms of Service</a>
     </div>
   </div>
@@ -132,6 +135,7 @@ export async function sendDriveConnectedEmail(params: {
   const appUrl = env.FRONTEND_URL || 'https://www.combined.top'
   const displayName = params.name.trim() || 'there'
   const driveLabel = params.driveName?.trim() || params.driveEmail
+  const supportEmail = 'support@combined.top'
 
   const html = `
 <!DOCTYPE html>
@@ -163,7 +167,10 @@ export async function sendDriveConnectedEmail(params: {
       <p>Your available storage has been updated. You can manage your connected accounts from Settings.</p>
       <div style="text-align: center;"><a href="${appUrl}/settings" class="btn">Open Settings</a></div>
     </div>
-    <div class="footer">© ${new Date().getFullYear()} Combine Drive. All rights reserved.</div>
+    <div class="footer">      Combine Drive Security · Need help? Contact <a href="mailto:${supportEmail}">${supportEmail}</a><br>
+      © ${new Date().getFullYear()} Combine Drive · <a href="${appUrl}">${appUrl}</a>
+      <br>
+      <a href="${appUrl}/privacy" style="color: #64748b; text-decoration: underline;">Privacy Policy</a> · <a href="${appUrl}/terms" style="color: #64748b; text-decoration: underline;">Terms of Service</a></div>
   </div>
 </body>
 </html>
@@ -193,6 +200,7 @@ export async function sendInviteEmail(params: {
   const { to, inviterName, inviterEmail, targetName, targetType, role } = params
   const accessUrl = params.inviteUrl || `${appUrl}/shared`
   const senderLabel = inviterName ? `${inviterName} (${inviterEmail})` : inviterEmail
+  const supportEmail = 'support@combined.top'
 
   const html = `
 <!DOCTYPE html>
@@ -240,7 +248,10 @@ export async function sendInviteEmail(params: {
       </p>
     </div>
     <div class="footer">
-      © ${new Date().getFullYear()} Combine Drive · <a href="${appUrl}" style="color: #64748b;">${appUrl}</a>
+            Combine Drive Security · Need help? Contact <a href="mailto:${supportEmail}">${supportEmail}</a><br>
+      © ${new Date().getFullYear()} Combine Drive · <a href="${appUrl}">${appUrl}</a>
+      <br>
+      <a href="${appUrl}/privacy" style="color: #64748b; text-decoration: underline;">Privacy Policy</a> · <a href="${appUrl}/terms" style="color: #64748b; text-decoration: underline;">Terms of Service</a>
     </div>
   </div>
 </body>
@@ -267,6 +278,7 @@ export async function sendPasswordResetEmail(params: {
   const appUrl = env.FRONTEND_URL || 'https://www.combined.top'
   const { to, name, resetUrl, expiresInMinutes = 15 } = params
   const displayName = name?.trim() || 'there'
+  const supportEmail = 'support@combined.top'
 
   const html = `
 <!DOCTYPE html>
@@ -307,7 +319,10 @@ export async function sendPasswordResetEmail(params: {
       </p>
     </div>
     <div class="footer">
-      © ${new Date().getFullYear()} Combine Drive · <a href="${appUrl}" style="color: #64748b;">${appUrl}</a>
+           Combine Drive Security · Need help? Contact <a href="mailto:${supportEmail}">${supportEmail}</a><br>
+      © ${new Date().getFullYear()} Combine Drive · <a href="${appUrl}">${appUrl}</a>
+      <br>
+      <a href="${appUrl}/privacy" style="color: #64748b; text-decoration: underline;">Privacy Policy</a> · <a href="${appUrl}/terms" style="color: #64748b; text-decoration: underline;">Terms of Service</a>
     </div>
   </div>
 </body>
@@ -328,6 +343,7 @@ export async function sendPasswordChangedEmail(params: {
 }): Promise<boolean> {
   const appUrl = env.FRONTEND_URL || 'https://www.combined.top'
   const displayName = params.name.trim() || 'there'
+  const supportEmail = 'support@combined.top'
 
   const html = `
 <!DOCTYPE html>
@@ -356,7 +372,10 @@ export async function sendPasswordChangedEmail(params: {
       </div>
       <div style="text-align: center;"><a href="${appUrl}/login" class="btn">Go to Combine Drive</a></div>
     </div>
-    <div class="footer">© ${new Date().getFullYear()} Combine Drive. All rights reserved.</div>
+    <div class="footer">      Combine Drive Security · Need help? Contact <a href="mailto:${supportEmail}">${supportEmail}</a><br>
+      © ${new Date().getFullYear()} Combine Drive · <a href="${appUrl}">${appUrl}</a>
+      <br>
+      <a href="${appUrl}/privacy" style="color: #64748b; text-decoration: underline;">Privacy Policy</a> · <a href="${appUrl}/terms" style="color: #64748b; text-decoration: underline;">Terms of Service</a></div>
   </div>
 </body>
 </html>
@@ -383,6 +402,7 @@ export async function sendAccountDisconnectedEmail(params: {
   const { to, userName, accountEmail, reason } = params
   const displayName = userName?.trim() || 'there'
   const settingsUrl = `${appUrl}/settings`
+  const supportEmail = 'support@combined.top'
 
   const html = `
 <!DOCTYPE html>
@@ -428,7 +448,10 @@ export async function sendAccountDisconnectedEmail(params: {
       </p>
     </div>
     <div class="footer">
-      © ${new Date().getFullYear()} Combine Drive · <a href="${appUrl}" style="color: #64748b;">${appUrl}</a>
+      Combine Drive Security · Need help? Contact <a href="mailto:${supportEmail}">${supportEmail}</a><br>
+      © ${new Date().getFullYear()} Combine Drive · <a href="${appUrl}">${appUrl}</a>
+      <br>
+      <a href="${appUrl}/privacy" style="color: #64748b; text-decoration: underline;">Privacy Policy</a> · <a href="${appUrl}/terms" style="color: #64748b; text-decoration: underline;">Terms of Service</a>
     </div>
   </div>
 </body>
@@ -440,6 +463,118 @@ export async function sendAccountDisconnectedEmail(params: {
     subject: `Action Required: Reconnect your Google Drive (${accountEmail})`,
     html,
     text: `Hi ${displayName}, your connected Google Drive account ${accountEmail} needs to be reconnected. Please visit ${settingsUrl} to reconnect.`,
+  })
+}
+
+/**
+ * Sends a security alert notification when Entire Google Drive access is enabled for an account.
+ * Sent to both the Combine Drive registered email and the connected Google Drive email.
+ */
+export async function sendFullDriveAccessAlertEmail(params: {
+  to: string | string[]
+  userName?: string
+  accountEmail: string
+}): Promise<boolean> {
+  const appUrl = env.FRONTEND_URL || 'https://www.combined.top'
+  const { to, userName, accountEmail } = params
+  const displayName = userName?.trim() || 'User'
+  const settingsUrl = `${appUrl}/settings`
+  const supportEmail = 'support@combined.top'
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0f172a; color: #f1f5f9; margin: 0; padding: 24px 16px; }
+    .container { max-width: 580px; margin: 0 auto; background: #1e293b; border-radius: 18px; border: 1px solid #334155; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .header { background: linear-gradient(135deg, #b45309, #d97706); padding: 32px 24px; text-align: center; color: #ffffff; }
+    .header h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+    .content { padding: 32px 28px; line-height: 1.6; font-size: 15px; color: #cbd5e1; }
+    .badge { display: inline-block; background: #fef3c7; color: #92400e; font-weight: 800; font-size: 11px; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.05em; }
+    .alert-box { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 18px; margin: 20px 0; color: #fef3c7; }
+    .steps-box { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 18px 20px; margin: 22px 0; }
+    .steps-box h3 { margin: 0 0 12px; font-size: 14px; font-weight: 700; color: #f8fafc; text-transform: uppercase; letter-spacing: 0.04em; }
+    .steps-box ol { margin: 0; padding-left: 20px; color: #94a3b8; font-size: 14px; }
+    .steps-box li { margin-bottom: 8px; }
+    .steps-box li strong { color: #f1f5f9; }
+    .btn { display: inline-block; background: #f59e0b; color: #0f172a !important; text-decoration: none; padding: 12px 26px; border-radius: 10px; font-weight: 800; font-size: 14px; margin: 18px 0; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35); }
+    .footer { padding: 22px 24px; text-align: center; font-size: 12px; color: #64748b; border-top: 1px solid #334155; background: #131d31; }
+    .footer a { color: #38bdf8; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="badge">Security Notice</div>
+      <h1>Entire Google Drive Access Enabled</h1>
+    </div>
+    <div class="content">
+      <p>Hi <strong>${displayName}</strong>,</p>
+      <p>This is a security notification to inform you that <strong>Entire Google Drive Sync</strong> was just activated for your connected account:</p>
+      
+      <div style="background: #0f172a; border-radius: 8px; padding: 10px 16px; font-family: monospace; font-size: 14px; color: #38bdf8; margin: 12px 0 18px;">
+        ${accountEmail}
+      </div>
+
+      <div class="alert-box">
+        <strong style="color: #fbbf24;">What this means:</strong><br>
+        Files outside the dedicated <code>CombinedDrive</code> folder can now be indexed and previewed in your Combine Drive dashboard. For your safety, <strong>public link generation and invites remain strictly disabled</strong> for these external files.
+      </div>
+
+      <div class="steps-box">
+        <h3>How to turn it off at any time:</h3>
+        <ol>
+          <li>Open your <strong>Combine Drive Settings</strong> (<a href="${settingsUrl}" style="color: #38bdf8;">${settingsUrl}</a>).</li>
+          <li>Under <strong>Connected Accounts</strong>, select <strong>${accountEmail}</strong>.</li>
+          <li>In the <strong>Drive Sync Scope</strong> card, select <strong>CombinedDrive Folder Only (Default)</strong>.</li>
+          <li>Click <strong>Revert to CombinedDrive Only</strong>.</li>
+        </ol>
+        <p style="margin: 8px 0 0; font-size: 12px; color: #64748b;">
+          Reverting takes effect instantly, requires no password, and immediately un-indexes all external files from Combine Drive without deleting anything from your Google Drive.
+        </p>
+      </div>
+
+      <div style="text-align: center;">
+        <a href="${settingsUrl}" class="btn">Manage Connected Accounts</a>
+      </div>
+
+      <p style="font-size: 13px; color: #94a3b8; margin-top: 24px; border-top: 1px solid #334155; padding-top: 16px;">
+        If you did not make this change, please immediately change your CombineDrive password and contact our support team at <a href="mailto:${supportEmail}" style="color: #38bdf8; font-weight: bold;">${supportEmail}</a>.
+      </p>
+    </div>
+    <div class="footer">
+      Combine Drive Security · Need help? Contact <a href="mailto:${supportEmail}">${supportEmail}</a><br>
+      © ${new Date().getFullYear()} Combine Drive · <a href="${appUrl}">${appUrl}</a>
+      <br>
+      <a href="${appUrl}/privacy" style="color: #64748b; text-decoration: underline;">Privacy Policy</a> · <a href="${appUrl}/terms" style="color: #64748b; text-decoration: underline;">Terms of Service</a>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim()
+
+  const plainText = `Hi ${displayName},
+
+Security Notice: Entire Google Drive Sync has been activated for ${accountEmail}.
+
+What this means:
+Files outside the dedicated CombinedDrive folder can now be indexed and previewed in your Combine Drive dashboard. Public sharing and collaborator invites remain locked for personal files.
+
+How to turn it off at any time:
+1. Go to ${settingsUrl}
+2. Select your account ${accountEmail} under Connected Accounts
+3. Under "Drive Sync Scope", choose "CombinedDrive Folder Only (Default)" and click Revert.
+
+If you did not authorize this change, please change your password immediately and contact support at ${supportEmail}.
+`
+
+  return sendEmail({
+    to,
+    subject: `Security Alert: Entire Google Drive sync enabled for ${accountEmail}`,
+    html,
+    text: plainText,
   })
 }
 

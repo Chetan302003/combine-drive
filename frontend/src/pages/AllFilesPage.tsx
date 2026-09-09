@@ -22,7 +22,7 @@ import type { FileItem, FolderItem } from '@/data/drive-data'
 import { useUpload } from '@/context/UploadContext'
 import { useDriveLayoutActions } from '@/layouts/DriveLayout'
 
-type BackendFile = { id: string; name: string; mimeType: string; sizeBytes: string; createdAt: string; starredAt?: string | null; folderId?: string | null; connectedAccount?: { email: string; provider: string }; folder?: { id: string; name: string } | null }
+type BackendFile = { id: string; name: string; mimeType: string; sizeBytes: string; createdAt: string; starredAt?: string | null; checksum?: string | null; folderId?: string | null; connectedAccount?: { email: string; provider: string }; folder?: { id: string; name: string } | null }
 type BackendFolder = { id: string; name: string; color: string; iconUrl?: string | null; parentId?: string | null; providerFolderId?: string | null; updatedAt: string }
 type ConnectedAccount = { id: string; provider: string; email: string; displayName?: string | null; status: string }
 
@@ -45,7 +45,7 @@ function getStoredFileViewMode(): FileViewMode {
 function mimeToKind(mimeType: string): FileItem['kind'] {
   if (mimeType.startsWith('image/')) return 'image'
   if (mimeType.startsWith('video/')) return 'video'
-  if (mimeType.includes('pdf')) return 'pdf'
+  if (mimeType === 'application/pdf') return 'pdf'
   return 'doc'
 }
 
@@ -55,7 +55,7 @@ function providerLabel(provider: string | undefined) {
 }
 
 function mapFile(file: BackendFile): FileItem {
-  return { id: file.id, name: file.name, mimeType: file.mimeType, sizeBytes: file.sizeBytes, createdAt: file.createdAt, starred: Boolean(file.starredAt), starredDate: file.starredAt ? formatDate(file.starredAt) : undefined, accountEmail: file.connectedAccount?.email, accountProvider: providerLabel(file.connectedAccount?.provider), date: formatDate(file.createdAt), size: formatBytes(file.sizeBytes), access: file.connectedAccount?.email ?? providerLabel(file.connectedAccount?.provider), kind: mimeToKind(file.mimeType), shared: 1, folderId: file.folderId, folderName: file.folder?.name }
+  return { id: file.id, name: file.name, mimeType: file.mimeType, sizeBytes: file.sizeBytes, createdAt: file.createdAt, starred: Boolean(file.starredAt), starredDate: file.starredAt ? formatDate(file.starredAt) : undefined, accountEmail: file.connectedAccount?.email, accountProvider: providerLabel(file.connectedAccount?.provider), date: formatDate(file.createdAt), size: formatBytes(file.sizeBytes), access: file.connectedAccount?.email ?? providerLabel(file.connectedAccount?.provider), kind: mimeToKind(file.mimeType), shared: 1, folderId: file.folderId, folderName: file.folder?.name, checksum: file.checksum, isExternal: file.checksum === 'external_drive' }
 }
 
 function mapFolder(folder: BackendFolder): FolderItem {
@@ -402,15 +402,22 @@ export function AllFilesPage() {
     setSearchParams(searchQuery ? { q: searchQuery } : {})
   }
 
-  async function viewFile() {
-    if (!activeFile?.id) return
+  async function handleOpenFile(file: FileItem) {
+    // If it is a folder item or has a matching folder, navigate to it
+    const matchingFolder = allFolders.find((f) => f.id === file.id || f.name === file.name)
+    if (matchingFolder?.id) {
+      openFolderById(matchingFolder.id)
+      return
+    }
+
+    if (!file.id) return
+    setActiveFile(file)
     setPreviewUrl('')
     setPreviewError('')
     setPreviewLoading(true)
     setPreviewOpen(true)
-    setContextMenu({ x: 0, y: 0, file: null })
     try {
-      const data = await apiFetch<{ path?: string; url: string }>(`/files/${activeFile.id}/preview-token`, { method: 'POST' })
+      const data = await apiFetch<{ path?: string; url: string }>(`/files/${file.id}/preview-token`, { method: 'POST' })
       const previewPath = data.path ?? new URL(data.url).pathname
       setPreviewUrl(`${API_URL}${previewPath}`)
     } catch (error) {
@@ -418,6 +425,12 @@ export function AllFilesPage() {
     } finally {
       setPreviewLoading(false)
     }
+  }
+
+  async function viewFile() {
+    if (!activeFile?.id) return
+    handleOpenFile(activeFile)
+    setContextMenu({ x: 0, y: 0, file: null })
   }
 
   async function downloadFile() {
@@ -453,7 +466,7 @@ export function AllFilesPage() {
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = '9drive-download.zip'
+      link.download = 'combined-drive-download.zip'
       link.click()
       URL.revokeObjectURL(url)
       clearSelection()
@@ -732,7 +745,7 @@ export function AllFilesPage() {
           {fileViewMode === 'grid' ? (
             <FileGrid files={files} selectedFileIds={selectedFileIds} sizeScale={folderSizeScale} onToggleFile={toggleFileSelection} onFileContextMenu={openContext} />
           ) : (
-            <FileTable files={files} selectedFileIds={selectedFileIds} allSelected={allVisibleSelected} onToggleFile={toggleFileSelection} onToggleAll={toggleAllVisibleFiles} onFileContextMenu={openContext} />
+            <FileTable files={files} selectedFileIds={selectedFileIds} allSelected={allVisibleSelected} onToggleFile={toggleFileSelection} onToggleAll={toggleAllVisibleFiles} onFileContextMenu={openContext} onFileOpen={handleOpenFile} />
           )}
         </Card>
       )}

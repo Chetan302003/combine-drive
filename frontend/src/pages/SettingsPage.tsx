@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, type FormEvent } from 'react'
-import { Activity, Bell, Bot, Check, Cloud, Copy, Database, ExternalLink, Globe, HardDrive, Link2, Radio, RefreshCw, ShieldCheck, Trash2, Zap } from 'lucide-react'
+import { Activity, Bell, Bot, Check, Cloud, Copy, Database, ExternalLink, Globe, HardDrive, Link2, Lock, Radio, RefreshCw, ShieldAlert, ShieldCheck, Trash2, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { DummyModal } from '@/components/drive/DummyModal'
@@ -8,7 +8,7 @@ import { apiFetch, formatBytes, API_URL } from '@/lib/api'
 import { getGravatarUrl } from '@/lib/gravatar'
 import { getStoredUser, getAccessToken, clearAuthSession } from '@/lib/auth'
 
-type ConnectedAccount = { id: string; provider: string; email: string; displayName?: string | null; status: string; storageAccount?: { totalBytes: string | null; usedBytes: string; availableBytes: string | null; lastSyncedAt: string | null } | null }
+type ConnectedAccount = { id: string; provider: string; email: string; displayName?: string | null; status: string; fullDriveSync?: boolean; storageAccount?: { totalBytes: string | null; usedBytes: string; availableBytes: string | null; lastSyncedAt: string | null } | null }
 
 function providerLabel(provider: string) {
   if (provider === 's3') return 'S3 Storage'
@@ -96,6 +96,61 @@ export function SettingsPage() {
   const [restoreFile, setRestoreFile] = useState<File | null>(null)
   const [restoreMessage, setRestoreMessage] = useState('')
   const [restoreSuccess, setRestoreSuccess] = useState(false)
+
+  // Drive Sync Scope states
+  const [scopeModalOpen, setScopeModalOpen] = useState(false)
+  const [scopeTargetAccount, setScopeTargetAccount] = useState<ConnectedAccount | null>(null)
+  const [scopePassword, setScopePassword] = useState('')
+  const [scopeError, setScopeError] = useState('')
+  const [savingSyncScope, setSavingSyncScope] = useState(false)
+
+  function openScopeModal(account: ConnectedAccount) {
+    setScopeTargetAccount(account)
+    setScopePassword('')
+    setScopeError('')
+    setScopeModalOpen(true)
+  }
+
+  async function handleConfirmScope(e: FormEvent) {
+    e.preventDefault()
+    if (!scopeTargetAccount) return
+    setSavingSyncScope(true)
+    setScopeError('')
+    try {
+      await apiFetch(`/connected-accounts/${scopeTargetAccount.id}/sync-mode`, {
+        method: 'POST',
+        body: JSON.stringify({ mode: 'full', password: scopePassword }),
+      })
+      setScopeModalOpen(false)
+      setMessage(`Enabled Entire Google Drive sync for ${scopeTargetAccount.email}. Click "Sync" to index your Drive files.`)
+      await load()
+    } catch (err: any) {
+      setScopeError(err?.message || 'Failed to verify password.')
+    } finally {
+      setSavingSyncScope(false)
+    }
+  }
+
+  async function handleRevertScope(account: ConnectedAccount) {
+    if (!confirm(`Revert ${account.email} back to "Only CombinedDrive Folder"? Files synced from outside CombinedDrive will be removed from your dashboard.`)) {
+      return
+    }
+    setSavingSyncScope(true)
+    setMessage('')
+    try {
+      await apiFetch(`/connected-accounts/${account.id}/sync-mode`, {
+        method: 'POST',
+        body: JSON.stringify({ mode: 'dedicated' }),
+      })
+      setMessage(`Reverted ${account.email} to CombinedDrive folder mode. External files removed.`)
+      await load()
+      window.dispatchEvent(new Event('9drive:storage-changed'))
+    } catch (err: any) {
+      setMessage(err?.message || 'Failed to revert sync scope.')
+    } finally {
+      setSavingSyncScope(false)
+    }
+  }
 
   async function checkHealth() {
     setCheckingHealth(true)
@@ -365,8 +420,8 @@ export function SettingsPage() {
 
     // Background browser pinger (keeps Render awake while tab is open)
     const pingerInterval = setInterval(() => {
-      checkHealth().catch(() => {})
-      fetchUptimeBot().catch(() => {})
+      checkHealth().catch(() => { })
+      fetchUptimeBot().catch(() => { })
     }, 5 * 60 * 1000)
 
     return () => clearInterval(pingerInterval)
@@ -524,6 +579,50 @@ export function SettingsPage() {
                     <div className="rounded-xl bg-white dark:bg-slate-950 p-2 border border-slate-100 dark:border-slate-800"><p className="font-extrabold text-slate-950">{storageLimitLabel(selectedAccount)}</p><p className="mt-0.5 text-[10px] text-slate-500">Total</p></div>
                     <div className="rounded-xl bg-white dark:bg-slate-950 p-2 border border-slate-100 dark:border-slate-800"><p className="font-extrabold text-slate-950">{availableLabel(selectedAccount)}</p><p className="mt-0.5 text-[10px] text-slate-500">Free</p></div>
                   </div>
+
+                  {/* Drive Sync Scope Section (Google Drive only) */}
+                  {selectedAccount.provider === 'google_drive' ? (
+                    <div className="mt-3.5 pt-3 border-t border-slate-200/60 dark:border-slate-800">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Drive Sync Scope:</span>
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${selectedAccount.fullDriveSync ? 'bg-amber-50 text-amber-900 border border-amber-300' : 'bg-blue-50 text-blue-900 border border-blue-200'}`}>
+                              {selectedAccount.fullDriveSync ? 'Entire Google Drive' : 'CombinedDrive Folder Only (Default)'}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                            {selectedAccount.fullDriveSync
+                              ? 'Syncing all files across your entire Drive. Public sharing & invites are locked for personal files.'
+                              : 'Restricted to the dedicated CombinedDrive folder. Keeps other personal Drive files private.'}
+                          </p>
+                        </div>
+                        <div className="shrink-0">
+                          {selectedAccount.fullDriveSync ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs h-8 text-slate-600 hover:text-slate-900"
+                              onClick={() => handleRevertScope(selectedAccount)}
+                              disabled={savingSyncScope}
+                            >
+                              Revert to Dedicated
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs h-8 border-amber-300 text-amber-900 bg-amber-50 hover:bg-amber-100 font-semibold"
+                              onClick={() => openScopeModal(selectedAccount)}
+                              disabled={savingSyncScope}
+                            >
+                              Enable Entire Drive
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
                 </div> : null}
               </>}
             </div>
@@ -666,7 +765,7 @@ export function SettingsPage() {
             {showBotGuide && (
               <div className="mt-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 p-4 text-[13px] leading-relaxed text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-800 space-y-3">
                 <p className="font-bold text-slate-800 dark:text-slate-200">
-                  How 9Drive guarantees 24/7 uptime on free hosting:
+                  How Combine Drive guarantees 24/7 uptime on free hosting:
                 </p>
                 <div className="space-y-2">
                   <div className="flex items-start gap-2.5">
@@ -914,13 +1013,13 @@ export function SettingsPage() {
                   <span className={[
                     'h-2 w-2 rounded-full',
                     healthStatus === 'ok' ? 'bg-emerald-500 shadow-[0_0_6px_2px_rgba(16,185,129,0.4)] animate-pulse' :
-                    healthStatus === 'error' ? 'bg-red-500 shadow-[0_0_6px_2px_rgba(239,68,68,0.4)]' :
-                    'bg-amber-400 shadow-[0_0_6px_2px_rgba(251,191,36,0.4)] animate-pulse'
+                      healthStatus === 'error' ? 'bg-red-500 shadow-[0_0_6px_2px_rgba(239,68,68,0.4)]' :
+                        'bg-amber-400 shadow-[0_0_6px_2px_rgba(251,191,36,0.4)] animate-pulse'
                   ].join(' ')} />
                   <span className={[
                     'text-[11px] font-bold',
                     healthStatus === 'ok' ? 'text-emerald-600' :
-                    healthStatus === 'error' ? 'text-red-600' : 'text-amber-500'
+                      healthStatus === 'error' ? 'text-red-600' : 'text-amber-500'
                   ].join(' ')}>
                     {healthStatus === 'ok' ? 'Online' : healthStatus === 'error' ? 'Offline' : 'Checking…'}
                   </span>
@@ -933,13 +1032,13 @@ export function SettingsPage() {
                   <span className={[
                     'h-2 w-2 rounded-full',
                     dbStatus === 'ok' ? 'bg-emerald-500 shadow-[0_0_6px_2px_rgba(16,185,129,0.4)] animate-pulse' :
-                    dbStatus === 'error' ? 'bg-red-500 shadow-[0_0_6px_2px_rgba(239,68,68,0.4)]' :
-                    'bg-amber-400 shadow-[0_0_6px_2px_rgba(251,191,36,0.4)] animate-pulse'
+                      dbStatus === 'error' ? 'bg-red-500 shadow-[0_0_6px_2px_rgba(239,68,68,0.4)]' :
+                        'bg-amber-400 shadow-[0_0_6px_2px_rgba(251,191,36,0.4)] animate-pulse'
                   ].join(' ')} />
                   <span className={[
                     'text-[11px] font-bold',
                     dbStatus === 'ok' ? 'text-emerald-600' :
-                    dbStatus === 'error' ? 'text-red-600' : 'text-amber-500'
+                      dbStatus === 'error' ? 'text-red-600' : 'text-amber-500'
                   ].join(' ')}>
                     {dbStatus === 'ok' ? 'Connected' : dbStatus === 'error' ? 'Error' : 'Checking…'}
                   </span>
@@ -1053,6 +1152,68 @@ export function SettingsPage() {
             )}
           </div>
         </div>
+      </DummyModal>
+
+      {/* Security Confirmation Modal for Entire Google Drive Scope */}
+      <DummyModal
+        open={scopeModalOpen}
+        title="Enable Entire Google Drive Sync"
+        description="Expose all folders & files from your connected Drive"
+        onClose={() => setScopeModalOpen(false)}
+      >
+        <form onSubmit={handleConfirmScope} className="grid gap-4">
+          <div className="rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 p-3.5 text-xs text-amber-900 dark:text-amber-200 leading-relaxed">
+            <div className="flex items-center gap-1.5 font-bold mb-1 text-amber-800 dark:text-amber-300">
+              <ShieldAlert className="h-4 w-4 shrink-0 text-amber-600" />
+              <span>Privacy & Security Notice</span>
+            </div>
+            <p>
+              This will scan and index <strong>all files across your entire Google Drive</strong> ({scopeTargetAccount?.email}) into Combine Drive.
+            </p>
+            <div className="mt-2 pt-2 border-t border-amber-200/60 dark:border-amber-800/60 text-[11px]">
+              <strong>Built-in Protection:</strong> Public share links and collaborator invites are automatically <strong>locked & disabled</strong> for files outside the dedicated CombinedDrive folder to prevent accidental exposure of your personal files.
+            </div>
+          </div>
+
+          <label className="grid gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+            Confirm Account Password
+            <div className="relative">
+              <input
+                type="password"
+                className="h-10 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 pl-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter your Combine Drive password"
+                value={scopePassword}
+                onChange={(e) => setScopePassword(e.target.value)}
+                required
+              />
+              <Lock className="h-4 w-4 text-slate-400 absolute left-2.5 top-3" />
+            </div>
+          </label>
+
+          {scopeError && (
+            <p className="rounded-lg bg-red-50 dark:bg-red-950/40 p-2 text-xs text-red-600 border border-red-200 dark:border-red-800">
+              {scopeError}
+            </p>
+          )}
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setScopeModalOpen(false)}
+              disabled={savingSyncScope}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="bg-amber-600 hover:bg-amber-700 text-white font-semibold"
+              disabled={savingSyncScope}
+            >
+              {savingSyncScope ? 'Verifying...' : 'Enable Entire Drive Sync'}
+            </Button>
+          </div>
+        </form>
       </DummyModal>
     </>
   )

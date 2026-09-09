@@ -2,11 +2,11 @@
 
 ## Project Overview
 
-9Drive is a Google Drive storage gateway. It lets users register/login with email/password or Google, automatically connect the first Drive account during Google sign-in, connect additional Google Drive accounts, track combined quota, upload files through the backend into a dedicated Google Drive `9drive` folder, organize files in virtual folders, preview/download/share files, sync MySQL file records from Google Drive, invite other users to files/folders, and route uploads to a connected Drive account with enough free space.
+Combine Drive (formerly 9Drive) is a multi-account cloud storage gateway. It lets users register/login with email/password or Google, automatically connect the first Drive account during Google sign-in, connect additional Google Drive accounts (or S3 buckets), track combined quota, upload files through the backend into a dedicated Google Drive `CombinedDrive` folder, organize files in virtual folders, preview/download/share files, sync MySQL file records from Google Drive (with optional full Google Drive sync), invite other users to files/folders, and route uploads to a connected Drive account with enough free space.
 
 ## Repository Structure
 
-- `backend/`: Express API, TypeScript, Prisma schema/migrations, MySQL access, auth, Google OAuth/Drive integration.
+- `backend/`: Express API, TypeScript, Prisma schema/migrations, MySQL access, auth, Google OAuth/Drive integration, S3 integration.
 - `frontend/`: Vite React app, protected dashboard UI, file/folder management, sharing, uploads, quota/settings pages.
 - `docker-compose.yml`: MySQL, backend, and nginx-served frontend services.
 - `.env.docker.example`: Docker environment template.
@@ -45,6 +45,7 @@ Important files:
 - `backend/src/modules/**`: feature route modules and provider services.
 - `backend/src/modules/files/stream-google-file.ts`: Google file preview/download streaming.
 - `backend/src/scripts/seed-google-config.ts`: stores encrypted global Google OAuth config.
+- `backend/src/lib/email.ts`: email notifications (welcome, drive connected, full drive security alerts, password reset, invites).
 
 Commands:
 - `cd backend && npm run dev`: start development server.
@@ -67,6 +68,8 @@ Environment:
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
 - `GOOGLE_REDIRECT_URI`
+- `RESEND_API_KEY` (optional; transactional email notifications)
+- `RESEND_FROM_EMAIL` (e.g. `Combine Drive <noreply@combined.top>`)
 
 Backend conventions:
 - Put route logic under `backend/src/modules/<feature>/<feature>.routes.ts`.
@@ -89,8 +92,10 @@ Security rules:
 - Google tokens are encrypted before database storage.
 - App refresh tokens are hashed before database storage.
 - Auth handoff, share, and preview tokens are stored as hashes where applicable.
-- Uploaded files must stream through backend to Google Drive folder `9drive`; do not store uploaded files on disk.
-- Keep CORS restricted by `FRONTEND_URL`.
+- Uploaded files must stream through backend to Google Drive folder `CombinedDrive`; do not store uploaded files on disk.
+- Files synced from outside the dedicated folder (`checksum: 'external_drive'`) strictly prohibit public link sharing (`/files/:id/share`) and collaborator invites (`/invites`).
+- Switching to Entire Drive sync requires account password re-verification via Argon2.
+- Keep CORS restricted by `FRONTEND_URL` and `ALLOWED_ORIGINS`.
 - Keep auth/token storage behavior centralized; do not change without explicit reason.
 
 Database rules:
@@ -178,6 +183,7 @@ Google connected accounts:
 - `GET /connected-accounts/google/callback`
 - `GET /connected-accounts`
 - `POST /connected-accounts/:id/sync-quota`
+- `POST /connected-accounts/:id/sync-mode` (toggles 'dedicated' or 'full' Google Drive sync; requires password confirmation for 'full')
 - `DELETE /connected-accounts/:id`
 
 Storage:
@@ -226,8 +232,8 @@ Uploads:
 - Current frontend sends metadata first as `filesMeta`: JSON array of `{ fieldName, fileName, mimeType, sizeBytes, folderId? }`.
 - File fields then match `filesMeta[*].fieldName`, e.g. `file-0`, `file-1`.
 - Backend selects a connected Drive account with enough available quota and streams each file directly to Google Drive.
-- Google Drive uploads are placed under the root Drive folder named `9drive`; virtual folders remain app/database-only.
-- `POST /files/sync-google` treats Google Drive folder `9drive` as source of truth for physical files: create missing MySQL file rows, update changed metadata, and mark missing Drive files as deleted.
+- Google Drive uploads are placed under the root Drive folder named `CombinedDrive`; virtual folders remain app/database-only.
+- `POST /files/sync-google` treats Google Drive folder `CombinedDrive` as source of truth for physical files: creates missing MySQL file rows, updates changed metadata, and marks missing Drive files as deleted. When `feature:full_drive_sync` is enabled, external folders and files are also synced and indexed.
 
 ## Docker
 

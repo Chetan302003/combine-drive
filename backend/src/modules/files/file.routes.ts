@@ -287,6 +287,12 @@ fileRouter.post('/:id/share', async (req: AuthRequest, res, next) => {
   try {
     const fileId = String(req.params.id)
     const file = await prisma.file.findFirstOrThrow({ where: { id: fileId, userId: req.user!.id, status: 'active' } })
+    if (file.checksum === 'external_drive') {
+      return res.status(403).json({
+        code: 'SHARING_RESTRICTED_FOR_EXTERNAL_FILES',
+        message: 'Public link sharing is disabled for files outside the CombinedDrive folder for your privacy and security.',
+      })
+    }
     const existingShare = await prisma.fileShare.findFirst({ where: { fileId: file.id, userId: req.user!.id, enabled: true, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] }, orderBy: { createdAt: 'desc' } })
 
     let shareId = existingShare?.id
@@ -307,6 +313,12 @@ fileRouter.post('/:id/public-permission', requireAuth, async (req: AuthRequest, 
   try {
     const fileId = String(req.params.id)
     const file = await prisma.file.findFirstOrThrow({ where: { id: fileId, userId: req.user!.id }, include: { connectedAccount: true } })
+    if (file.checksum === 'external_drive') {
+      return res.status(403).json({
+        code: 'SHARING_RESTRICTED_FOR_EXTERNAL_FILES',
+        message: 'Public permissions cannot be modified for files outside the CombinedDrive folder.',
+      })
+    }
     if (file.provider !== 'google_drive') {
       return res.status(400).json({ code: 'UNSUPPORTED_PROVIDER', message: 'Only Google Drive files can be made public.' })
     }

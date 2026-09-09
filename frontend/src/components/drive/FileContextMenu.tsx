@@ -32,28 +32,39 @@ const kindLabels: Record<string, string> = {
   doc: 'Document',
 }
 
-function MenuItem({ icon: Icon, label, onClick, danger = false, kbd }: { icon: React.ElementType; label: string; onClick: () => void; danger?: boolean; kbd?: string }) {
+function MenuItem({ icon: Icon, label, onClick, danger = false, disabled = false, title, kbd }: { icon: React.ElementType; label: string; onClick: () => void; danger?: boolean; disabled?: boolean; title?: string; kbd?: string }) {
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      title={title}
       className={[
         'group relative flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] font-semibold transition-all duration-150',
-        danger
+        disabled
+          ? 'opacity-40 cursor-not-allowed text-slate-400 dark:text-slate-600'
+          : danger
           ? 'text-red-500 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40'
           : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800/70',
       ].join(' ')}
     >
       <span className={[
         'flex h-7 w-7 shrink-0 items-center justify-center rounded-lg transition-all duration-150',
-        danger
+        disabled
+          ? 'bg-slate-100 text-slate-300 dark:bg-slate-800 dark:text-slate-600'
+          : danger
           ? 'bg-red-50 text-red-500 group-hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400'
           : 'bg-slate-100 text-slate-500 group-hover:bg-white group-hover:shadow-sm dark:bg-slate-800 dark:text-slate-400',
       ].join(' ')}>
         <Icon className="h-3.5 w-3.5" />
       </span>
       <span className="flex-1 text-left">{label}</span>
-      {kbd && (
+      {disabled && (
+        <span className="text-[10px] font-normal text-amber-600 dark:text-amber-500">
+          Locked
+        </span>
+      )}
+      {!disabled && kbd && (
         <kbd className="hidden rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] font-medium text-slate-400 group-hover:border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500 sm:inline">
           {kbd}
         </kbd>
@@ -69,6 +80,7 @@ export function FileContextMenu({ x, y, file, onClose, onView, onDownload, onRen
   const safeY = Math.max(12, Math.min(y, window.innerHeight - 430))
   const kindColor = kindColors[file.kind] ?? 'bg-slate-500'
   const kindLabel = kindLabels[file.kind] ?? 'File'
+  const isExternal = Boolean(file.isExternal || file.checksum === 'external_drive')
 
   function handleShare() {
     onShare()
@@ -105,13 +117,18 @@ export function FileContextMenu({ x, y, file, onClose, onView, onDownload, onRen
                 <span className="rounded-md bg-slate-200/70 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-slate-700 dark:text-slate-400">
                   {file.size}
                 </span>
+                {isExternal && (
+                  <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                    Full Drive
+                  </span>
+                )}
                 {file.folderName && (
                   <span className="flex items-center gap-0.5 rounded-md bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
                     <FolderInput className="h-2.5 w-2.5" />
                     {file.folderName}
                   </span>
                 )}
-                {!file.folderName && (
+                {!file.folderName && !isExternal && (
                   <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 dark:bg-slate-800 dark:text-slate-500">
                     / All Files
                   </span>
@@ -132,9 +149,28 @@ export function FileContextMenu({ x, y, file, onClose, onView, onDownload, onRen
 
           <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />
 
-          <MenuItem icon={Link2} label="Share Link" onClick={handleShare} />
-          <MenuItem icon={Copy} label="Copy Link" onClick={handleCopyLink} kbd="Ctrl+L" />
-          <MenuItem icon={UserPlus} label="Invite Member" onClick={onInvite} />
+          <MenuItem
+            icon={Link2}
+            label="Share Link"
+            onClick={handleShare}
+            disabled={isExternal}
+            title={isExternal ? 'Sharing is disabled for files outside CombinedDrive for privacy' : undefined}
+          />
+          <MenuItem
+            icon={Copy}
+            label="Copy Link"
+            onClick={handleCopyLink}
+            kbd="Ctrl+L"
+            disabled={isExternal}
+            title={isExternal ? 'Sharing is disabled for files outside CombinedDrive for privacy' : undefined}
+          />
+          <MenuItem
+            icon={UserPlus}
+            label="Invite Member"
+            onClick={onInvite}
+            disabled={isExternal}
+            title={isExternal ? 'Invitations are disabled for files outside CombinedDrive for privacy' : undefined}
+          />
 
           <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />
 

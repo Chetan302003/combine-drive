@@ -83,6 +83,10 @@
   --red-text-override: #fca5a5;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   font-family: Manrope, ui-sans-serif, system-ui, sans-serif;
   color: var(--text-primary);
@@ -91,7 +95,6 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background 0.5s ease, color 0.5s ease;
 }
 
 * {
@@ -103,6 +106,7 @@ body {
   min-width: 320px;
   background: transparent !important;
   color: var(--text-primary) !important;
+  overflow-x: hidden;
 }
 
 button,
@@ -170,7 +174,6 @@ section.bg-white:not(button) {
 /* Base Text Color Overrides */
 p, span, h1, h2, h3, h4, h5, h6, label, div, td, th {
   color: var(--text-primary);
-  transition: color 0.3s ease;
 }
 
 /* Subtitles / Secondary Text */
@@ -178,7 +181,6 @@ p, span, h1, h2, h3, h4, h5, h6, label, div, td, th {
 .text-slate-600,
 .text-slate-400 {
   color: var(--text-secondary) !important;
-  transition: color 0.3s ease;
 }
 
 /* Bold / Primary Text */
@@ -186,66 +188,62 @@ p, span, h1, h2, h3, h4, h5, h6, label, div, td, th {
 .text-slate-900,
 .font-extrabold {
   color: var(--text-bold) !important;
-  transition: color 0.3s ease;
 }
 
-/* Futuristic Glass Sidebar */
+/* Futuristic Glass Sidebar - hardware accelerated */
 aside {
   background: var(--sidebar-bg) !important;
-  backdrop-filter: blur(25px) saturate(180%);
-  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-right: 1px solid var(--sidebar-border) !important;
-  box-shadow: 4px 0 30px var(--shadow-color) !important;
-  transition: background 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+  box-shadow: 4px 0 20px var(--shadow-color) !important;
+  transform: translateZ(0);
 }
 
 /* Profile divider inside sidebar */
 .border-y.border-slate-200 {
   border-color: var(--sidebar-border) !important;
-  transition: border-color 0.3s ease;
 }
 
-/* Glass Cards and Info Panels */
+/* Glass Cards and Info Panels - optimized blur & composited */
 .rounded-xl.border-slate-200,
 .rounded-2xl.border-slate-200,
 div.border.border-slate-200,
 .card {
   background: var(--card-bg) !important;
-  backdrop-filter: blur(20px) saturate(130%);
-  -webkit-backdrop-filter: blur(20px) saturate(130%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--card-border) !important;
   box-shadow:
-    0 10px 30px var(--shadow-color),
-    0 1px 3px rgba(0, 0, 0, 0.05) !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    0 4px 20px var(--shadow-color),
+    0 1px 3px rgba(0, 0, 0, 0.03) !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transform: translateZ(0);
 }
 
 .rounded-xl.border-slate-200:hover,
 .rounded-2xl.border-slate-200:hover {
   background: var(--card-bg) !important;
-  filter: brightness(1.05);
   border-color: var(--outline-btn-border) !important;
   box-shadow:
-    0 15px 35px var(--shadow-hover),
-    0 1px 10px rgba(0, 0, 0, 0.08) !important;
-  transform: translateY(-2px);
+    0 8px 25px var(--shadow-hover),
+    0 1px 6px rgba(0, 0, 0, 0.06) !important;
+  transform: translateY(-1px) translateZ(0);
 }
 
-/* Inputs and Select Boxes */
+/* Inputs and Select Boxes - lightweight clean glass */
 input:not([type="checkbox"]):not([type="radio"]), select, textarea {
   background: var(--input-bg) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--input-border) !important;
   color: var(--text-primary) !important;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05) !important;
-  transition: all 0.3s ease !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
 }
 
 input:not([type="checkbox"]):not([type="radio"]):focus, select:focus, textarea:focus {
   background: var(--input-focus-bg) !important;
   border-color: var(--active-nav-border) !important;
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
   outline: none;
 }
 
