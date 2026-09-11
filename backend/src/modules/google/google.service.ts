@@ -157,14 +157,14 @@ export async function syncGoogleAppFolderFiles(accountId: string, userId: string
 
     do {
       const folderRes = await drive.files.list({
-        q: `mimeType = '${googleDriveFolderMimeType}' and trashed = false and id != '${appFolderId}'`,
+        q: `mimeType = '${googleDriveFolderMimeType}' and trashed = false`,
         spaces: 'drive',
         fields: 'nextPageToken,files(id,name,parents)',
         pageSize: 1000,
         pageToken: folderPageToken,
       })
       for (const f of folderRes.data.files ?? []) {
-        if (!f.id || !f.name) continue
+        if (!f.id || !f.name || f.id === appFolderId) continue
         const rawParent = f.parents?.[0] ?? null
         driveFolders.push({ id: f.id, name: f.name, parentId: rawParent })
       }

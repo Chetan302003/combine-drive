@@ -587,7 +587,7 @@ export function SettingsPage() {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
                             <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Drive Sync Scope:</span>
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${selectedAccount.fullDriveSync ? 'bg-amber-50 text-amber-900 border border-amber-300' : 'bg-blue-50 text-blue-900 border border-blue-200'}`}>
+                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${selectedAccount.fullDriveSync ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-black-500 text-blue-900 border border-blue-200'}`}>
                               {selectedAccount.fullDriveSync ? 'Entire Google Drive' : 'CombinedDrive Folder Only (Default)'}
                             </span>
                           </div>
