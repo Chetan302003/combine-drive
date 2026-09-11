@@ -402,7 +402,19 @@ fileRouter.get('/:id/download', async (req: AuthRequest, res, next) => {
 fileRouter.delete('/:id', async (req: AuthRequest, res, next) => {
   try {
     const fileId = String(req.params.id)
-    const file = await prisma.file.findFirstOrThrow({ where: { id: fileId, userId: req.user!.id, status: 'active' } })
+    const file = await prisma.file.findFirstOrThrow({ where: { id: fileId, userId: req.user!.id, status: 'active' }, include: { connectedAccount: true } })
+    
+    // Reflect deletion on Google Drive source account
+    if (file.provider === 'google_drive' && file.connectedAccount) {
+      try {
+        const auth = await getAuthedGoogleClient(file.connectedAccount)
+        const drive = google.drive({ version: 'v3', auth })
+        await drive.files.delete({ fileId: file.providerFileId })
+      } catch (err: any) {
+        console.warn('Failed to delete file on Google Drive:', err?.message || err)
+      }
+    }
+
     await prisma.file.update({ where: { id: file.id }, data: { status: 'deleted', deletedAt: new Date() } })
     await createAuditLog(req.user!.id, 'TRASH_FILE', 'file', file.id, { name: file.name })
     return res.json({ status: 'ok' })
