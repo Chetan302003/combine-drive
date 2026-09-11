@@ -280,6 +280,7 @@ model Folder {
   name               String            @db.VarChar(255)
   color              String            @default("text-blue-500") @db.VarChar(64)
   iconUrl            String?           @map("icon_url") @db.Text
+  isExternal         Boolean           @default(false) @map("is_external")
   createdAt          DateTime          @default(now()) @map("created_at")
   updatedAt          DateTime          @updatedAt @map("updated_at")
   deletedAt          DateTime?         @map("deleted_at")

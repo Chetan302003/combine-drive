@@ -188,15 +188,16 @@ export async function syncGoogleAppFolderFiles(accountId: string, userId: string
             providerFolderId: df.id,
             name: df.name,
             color: '#3b82f6',
+            isExternal: true,
             deletedAt: null,
           }
         })
         existingFoldersByGId.set(df.id, createdFolder)
       } else {
-        if (existingF.name !== df.name || existingF.deletedAt !== null) {
+        if (existingF.name !== df.name || existingF.deletedAt !== null || !existingF.isExternal) {
           await prisma.folder.update({
             where: { id: existingF.id },
-            data: { name: df.name, deletedAt: null }
+            data: { name: df.name, isExternal: true, deletedAt: null }
           })
         }
       }

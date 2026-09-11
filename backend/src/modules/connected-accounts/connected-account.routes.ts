@@ -356,6 +356,11 @@ connectedAccountRouter.post('/:id/sync-mode', requireAuth, async (req: AuthReque
         where: { userId: req.user!.id, connectedAccountId: account.id, checksum: 'external_drive' },
         data: { status: 'deleted', deletedAt: new Date() },
       })
+      // Also soft-delete external folders
+      await prisma.folder.updateMany({
+        where: { userId: req.user!.id, connectedAccountId: account.id, isExternal: true },
+        data: { deletedAt: new Date() },
+      })
     }
 
     await prisma.connectedAccount.update({
