@@ -147,80 +147,6 @@ export async function syncGoogleAppFolderFiles(accountId: string, userId: string
     select: { id: true, providerFolderId: true, parentId: true }
   })
 
-  const isFullDrive = Array.isArray(account.scopes) && (account.scopes as string[]).includes('feature:full_drive_sync')
-
-  // When Full Drive is enabled, sync external Google Drive folders into the Folder table
-  if (isFullDrive) {
-    type DriveFolderMetadata = { id: string; name: string; parentId: string | null }
-    const driveFolders: DriveFolderMetadata[] = []
-    let folderPageToken: string | undefined
-
-    do {
-      const folderRes = await drive.files.list({
-        q: `mimeType = '${googleDriveFolderMimeType}' and trashed = false`,
-        spaces: 'drive',
-        fields: 'nextPageToken,files(id,name,parents)',
-        pageSize: 1000,
-        pageToken: folderPageToken,
-      })
-      for (const f of folderRes.data.files ?? []) {
-        if (!f.id || !f.name || f.id === appFolderId) continue
-        const rawParent = f.parents?.[0] ?? null
-        driveFolders.push({ id: f.id, name: f.name, parentId: rawParent })
-      }
-      folderPageToken = folderRes.data.nextPageToken ?? undefined
-    } while (folderPageToken)
-
-    const existingFolders = await prisma.folder.findMany({
-      where: { userId, connectedAccountId: account.id }
-    })
-    const existingFoldersByGId = new Map(existingFolders.map((f) => [f.providerFolderId, f]))
-
-    // Upsert each external Google Drive folder
-    for (const df of driveFolders) {
-      const existingF = existingFoldersByGId.get(df.id)
-      if (!existingF) {
-        const createdFolder = await prisma.folder.create({
-          data: {
-            userId,
-            connectedAccountId: account.id,
-            provider: 'google_drive',
-            providerFolderId: df.id,
-            name: df.name,
-            color: '#3b82f6',
-            isExternal: true,
-            deletedAt: null,
-          }
-        })
-        existingFoldersByGId.set(df.id, createdFolder)
-      } else {
-        if (existingF.name !== df.name || existingF.deletedAt !== null || !existingF.isExternal) {
-          await prisma.folder.update({
-            where: { id: existingF.id },
-            data: { name: df.name, isExternal: true, deletedAt: null }
-          })
-        }
-      }
-    }
-
-    // Connect folder parentId hierarchy
-    for (const df of driveFolders) {
-      const currentF = existingFoldersByGId.get(df.id)
-      if (!currentF) continue
-      let resolvedParentDbId: string | null = null
-      if (df.parentId && df.parentId !== appFolderId && df.parentId !== 'root') {
-        const parentF = existingFoldersByGId.get(df.parentId)
-        if (parentF) resolvedParentDbId = parentF.id
-      }
-      if (currentF.parentId !== resolvedParentDbId) {
-        await prisma.folder.update({
-          where: { id: currentF.id },
-          data: { parentId: resolvedParentDbId }
-        })
-      }
-    }
-  }
-
   // Refresh active user folders after external folders sync
   const allUserFolders = await prisma.folder.findMany({
     where: { userId, connectedAccountId: account.id, deletedAt: null },
@@ -237,13 +163,8 @@ export async function syncGoogleAppFolderFiles(accountId: string, userId: string
   const driveFiles: DriveFileMetadata[] = []
   let pageToken: string | undefined
 
-  let q: string
-  if (isFullDrive) {
-    q = `mimeType != '${googleDriveFolderMimeType}' and trashed = false`
-  } else {
-    const parentsQuery = parentIds.map((id) => `'${id}' in parents`).join(' or ')
-    q = `(${parentsQuery}) and mimeType != '${googleDriveFolderMimeType}' and trashed = false`
-  }
+  const parentsQuery = parentIds.map((id) => `'${id}' in parents`).join(' or ')
+  const q = `(${parentsQuery}) and mimeType != '${googleDriveFolderMimeType}' and trashed = false`
 
   do {
     const response = await drive.files.list({
