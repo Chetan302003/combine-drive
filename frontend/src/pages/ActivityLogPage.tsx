@@ -172,7 +172,7 @@ export function ActivityLogPage() {
               const EntityIcon = log.entityType === 'folder' ? Folder : FileText
 
               return (
-                <div key={log.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 hover:bg-slate-50 transition-colors">
+                <div key={log.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 hover:bg-slate-100 transition-colors">
                   <div className="flex items-start gap-4">
                     <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl border font-bold shrink-0", badge.bg)}>
                       <badge.icon className="h-4 w-4" />

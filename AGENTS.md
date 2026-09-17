@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Combine Drive (formerly 9Drive) is a multi-account cloud storage gateway. It lets users register/login with email/password or Google, automatically connect the first Drive account during Google sign-in, connect additional Google Drive accounts (or S3 buckets), track combined quota, upload files through the backend into a dedicated Google Drive `CombinedDrive` folder, organize files in virtual folders, preview/download/share files, sync MySQL file records from Google Drive (with optional full Google Drive sync), invite other users to files/folders, and route uploads to a connected Drive account with enough free space.
+Combine Drive (formerly 9Drive) is a multi-account cloud storage gateway. It lets users register/login with email/password or Google, automatically connect the first Drive account during Google sign-in, connect additional Google Drive accounts (or S3 buckets), track combined quota, upload files through the backend into a dedicated Google Drive `CombinedDrive` folder, organize files in virtual folders, preview/download/share files, sync MySQL file records from the dedicated Google Drive `CombinedDrive` folder, invite other users to files/folders, and route uploads to a connected Drive account with enough free space.
 
 ## Repository Structure
 
@@ -45,7 +45,7 @@ Important files:
 - `backend/src/modules/**`: feature route modules and provider services.
 - `backend/src/modules/files/stream-google-file.ts`: Google file preview/download streaming.
 - `backend/src/scripts/seed-google-config.ts`: stores encrypted global Google OAuth config.
-- `backend/src/lib/email.ts`: email notifications (welcome, drive connected, full drive security alerts, password reset, invites).
+- `backend/src/lib/email.ts`: email notifications (welcome, drive connected, password reset, invites).
 
 Commands:
 - `cd backend && npm run dev`: start development server.
@@ -93,8 +93,6 @@ Security rules:
 - App refresh tokens are hashed before database storage.
 - Auth handoff, share, and preview tokens are stored as hashes where applicable.
 - Uploaded files must stream through backend to Google Drive folder `CombinedDrive`; do not store uploaded files on disk.
-- Files synced from outside the dedicated folder (`checksum: 'external_drive'`) strictly prohibit public link sharing (`/files/:id/share`) and collaborator invites (`/invites`).
-- Switching to Entire Drive sync requires account password re-verification via Argon2.
 - Keep CORS restricted by `FRONTEND_URL` and `ALLOWED_ORIGINS`.
 - Keep auth/token storage behavior centralized; do not change without explicit reason.
 
@@ -183,7 +181,6 @@ Google connected accounts:
 - `GET /connected-accounts/google/callback`
 - `GET /connected-accounts`
 - `POST /connected-accounts/:id/sync-quota`
-- `POST /connected-accounts/:id/sync-mode` (toggles 'dedicated' or 'full' Google Drive sync; requires password confirmation for 'full')
 - `DELETE /connected-accounts/:id`
 
 Storage:
@@ -233,7 +230,7 @@ Uploads:
 - File fields then match `filesMeta[*].fieldName`, e.g. `file-0`, `file-1`.
 - Backend selects a connected Drive account with enough available quota and streams each file directly to Google Drive.
 - Google Drive uploads are placed under the root Drive folder named `CombinedDrive`; virtual folders remain app/database-only.
-- `POST /files/sync-google` treats Google Drive folder `CombinedDrive` as source of truth for physical files: creates missing MySQL file rows, updates changed metadata, and marks missing Drive files as deleted. When `feature:full_drive_sync` is enabled, external folders and files are also synced and indexed.
+- `POST /files/sync-google` treats Google Drive folder `CombinedDrive` as source of truth for physical files: creates missing MySQL file rows, updates changed metadata, and marks missing Drive files as deleted.
 
 ## Docker
 

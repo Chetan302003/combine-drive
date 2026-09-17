@@ -169,7 +169,7 @@ export function TrashPage() {
               </thead>
               <tbody>
                 {files.map((file) => (
-                  <tr key={file.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition">
+                  <tr key={file.id} className="border-b border-slate-200/40 hover:bg-slate-100 transition-colors">
                     <td className="p-4">
                       <input
                         type="checkbox"

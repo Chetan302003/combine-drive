@@ -45,41 +45,41 @@
 
 :root.dark {
   --bg-gradient:
-    radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.18) 0px, transparent 55%),
-    radial-gradient(at 100% 0%, rgba(244, 63, 94, 0.12) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 55%),
-    #090d16;
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-bold: #f8fafc;
-  --card-bg: rgba(18, 24, 43, 0.55);
-  --card-border: rgba(255, 255, 255, 0.08);
-  --sidebar-bg: rgba(10, 15, 28, 0.65);
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --input-bg: rgba(255, 255, 255, 0.04);
-  --input-border: rgba(255, 255, 255, 0.08);
-  --input-focus-bg: rgba(255, 255, 255, 0.08);
-  --shadow-color: rgba(0, 0, 0, 0.3);
-  --shadow-hover: rgba(0, 0, 0, 0.4);
-  --active-nav-bg: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(244, 63, 94, 0.05) 100%);
-  --active-nav-text: #f8fafc;
-  --active-nav-border: #6366f1;
-  --button-shadow: rgba(99, 102, 241, 0.35);
-  --button-hover-shadow: rgba(99, 102, 241, 0.5);
-  --outline-btn-bg: rgba(255, 255, 255, 0.02);
-  --outline-btn-border: rgba(255, 255, 255, 0.1);
+    radial-gradient(at 0% 0%, rgba(225, 29, 72, 0.28) 0px, transparent 55%),
+    radial-gradient(at 100% 0%, rgba(159, 18, 57, 0.22) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(136, 19, 55, 0.18) 0px, transparent 55%),
+    #0a0204;
+  --text-primary: #fff1f2;
+  --text-secondary: #fda4af;
+  --text-bold: #ffffff;
+  --card-bg: rgba(24, 9, 15, 0.75);
+  --card-border: rgba(225, 29, 72, 0.25);
+  --sidebar-bg: rgba(18, 6, 11, 0.85);
+  --sidebar-border: rgba(225, 29, 72, 0.2);
+  --input-bg: rgba(225, 29, 72, 0.06);
+  --input-border: rgba(225, 29, 72, 0.25);
+  --input-focus-bg: rgba(225, 29, 72, 0.12);
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --shadow-hover: rgba(225, 29, 72, 0.25);
+  --active-nav-bg: linear-gradient(135deg, rgba(225, 29, 72, 0.25) 0%, rgba(159, 18, 57, 0.15) 100%);
+  --active-nav-text: #ffffff;
+  --active-nav-border: #f43f5e;
+  --button-shadow: rgba(225, 29, 72, 0.45);
+  --button-hover-shadow: rgba(225, 29, 72, 0.65);
+  --outline-btn-bg: rgba(225, 29, 72, 0.05);
+  --outline-btn-border: rgba(225, 29, 72, 0.25);
 
   /* Overrides for Tailwind Slate Utilities in Dark Mode */
-  --slate-50-override: rgba(255, 255, 255, 0.03);
-  --slate-100-override: rgba(255, 255, 255, 0.08);
-  --slate-200-override: rgba(255, 255, 255, 0.15);
+  --slate-50-override: rgba(225, 29, 72, 0.05);
+  --slate-100-override: rgba(225, 29, 72, 0.12);
+  --slate-200-override: rgba(225, 29, 72, 0.25);
 
   /* Overrides for Alerts/Status messages in Dark Mode */
-  --blue-bg-override: rgba(59, 130, 246, 0.15);
-  --blue-text-override: #93c5fd;
-  --emerald-bg-override: rgba(16, 185, 129, 0.15);
+  --blue-bg-override: rgba(225, 29, 72, 0.2);
+  --blue-text-override: #f472b6;
+  --emerald-bg-override: rgba(16, 185, 129, 0.2);
   --emerald-text-override: #6ee7b7;
-  --red-bg-override: rgba(239, 68, 68, 0.15);
+  --red-bg-override: rgba(225, 29, 72, 0.25);
   --red-text-override: #fca5a5;
 }
 
@@ -162,13 +162,14 @@ section.bg-white:not(button) {
 }
 
 /* Hover effects for background classes */
-.hover\:bg-slate-100:hover {
+.hover\:bg-slate-50:hover,
+.hover\:bg-slate-50\/50:hover,
+.hover\:bg-slate-100:hover,
+.hover\:bg-slate-100\/50:hover {
   background-color: var(--slate-100-override) !important;
-  opacity: 0.9;
 }
 .hover\:bg-slate-200:hover {
   background-color: var(--slate-200-override) !important;
-  opacity: 0.95;
 }
 
 /* Base Text Color Overrides */
@@ -190,14 +191,31 @@ p, span, h1, h2, h3, h4, h5, h6, label, div, td, th {
   color: var(--text-bold) !important;
 }
 
-/* Futuristic Glass Sidebar - hardware accelerated */
+/* Hardware-Accelerated Performance Layer Promotion */
+aside,
+.card,
+nav a,
+input,
+select,
+button {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Skip layout & paint phase for off-screen list & grid items */
+.grid > div,
+.space-y-2 > div {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 120px;
+}
+
+/* Futuristic Glass Sidebar - hardware accelerated & GPU composite */
 aside {
   background: var(--sidebar-bg) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-right: 1px solid var(--sidebar-border) !important;
   box-shadow: 4px 0 20px var(--shadow-color) !important;
-  transform: translateZ(0);
 }
 
 /* Profile divider inside sidebar */
@@ -211,23 +229,18 @@ aside {
 div.border.border-slate-200,
 .card {
   background: var(--card-bg) !important;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   border: 1px solid var(--card-border) !important;
-  box-shadow:
-    0 4px 20px var(--shadow-color),
-    0 1px 3px rgba(0, 0, 0, 0.03) !important;
+  box-shadow: 0 4px 16px var(--shadow-color) !important;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
-  transform: translateZ(0);
 }
 
 .rounded-xl.border-slate-200:hover,
 .rounded-2xl.border-slate-200:hover {
   background: var(--card-bg) !important;
   border-color: var(--outline-btn-border) !important;
-  box-shadow:
-    0 8px 25px var(--shadow-hover),
-    0 1px 6px rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 6px 20px var(--shadow-hover) !important;
   transform: translateY(-1px) translateZ(0);
 }
 
@@ -280,10 +293,10 @@ nav a:not(.active):hover, aside a:not(.active):hover {
   transform: translateX(3px);
 }
 
-/* Glowing Modern Buttons */
+/* Glowing Crimson Modern Buttons */
 button.bg-blue-600,
 .bg-blue-600 {
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+  background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%) !important;
   border: none !important;
   color: white !important;
   box-shadow: 0 4px 20px var(--button-shadow) !important;
@@ -292,7 +305,7 @@ button.bg-blue-600,
 
 button.bg-blue-600:hover,
 .bg-blue-600:hover {
-  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+  background: linear-gradient(135deg, #be123c 0%, #9f1239 100%) !important;
   box-shadow: 0 6px 25px var(--button-hover-shadow) !important;
   transform: translateY(-1px);
 }
@@ -383,8 +396,8 @@ aside .card .bg-slate-100 {
 }
 
 aside .card .bg-slate-100 > .bg-blue-600 {
-  background: linear-gradient(90deg, #6366f1 0%, #3b82f6 100%) !important;
-  box-shadow: 0 0 8px rgba(99, 102, 241, 0.6) !important;
+  background: linear-gradient(90deg, #f43f5e 0%, #e11d48 100%) !important;
+  box-shadow: 0 0 10px rgba(244, 63, 94, 0.7) !important;
   border-radius: 9999px !important;
 }
 
