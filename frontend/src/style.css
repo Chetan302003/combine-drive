@@ -191,15 +191,14 @@ p, span, h1, h2, h3, h4, h5, h6, label, div, td, th {
   color: var(--text-bold) !important;
 }
 
-/* Hardware-Accelerated Performance Layer Promotion */
+/* Hardware-Accelerated Performance Layer Promotion - Scoped for low VRAM overhead */
 aside,
-.card,
-nav a,
-input,
-select,
-button {
+.card:hover,
+nav a:hover,
+button:hover {
   transform: translateZ(0);
   will-change: transform;
+  backface-visibility: hidden;
 }
 
 /* Skip layout & paint phase for off-screen list & grid items */
@@ -256,7 +255,7 @@ input:not([type="checkbox"]):not([type="radio"]), select, textarea {
 input:not([type="checkbox"]):not([type="radio"]):focus, select:focus, textarea:focus {
   background: var(--input-focus-bg) !important;
   border-color: var(--active-nav-border) !important;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+  box-shadow: 0 0 0 3px var(--button-shadow) !important;
   outline: none;
 }
 
